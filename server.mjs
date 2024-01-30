@@ -7,6 +7,7 @@ const server = express();
 const port = (process.env.PORT || 8080);
 server.set('port', port);
 
+server.use(express.json());
 // Defining a folder that will contain static files.
 server.use(express.static('public'));
 

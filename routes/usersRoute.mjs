@@ -1,11 +1,33 @@
 import express, { response } from "express";
 import User from "../modules/user.mjs";
 import HttpCodes from "../modules/httpErrorCodes.mjs";
+import fs from "fs";
 
 
 const USER_API = express.Router();
 
 const users = [];
+
+try{
+    const data = fs.readFileSync('users.json', 'utf8');
+    users = JSON.parse(data);
+
+}catch(err){
+    console.error("Failed to read users from file, starting with an emty array.", err);
+}
+
+function saveUsers(){
+
+        fs.writeFile('users.json', JSON.stringify(users), 'utf8', (err) => {
+        if (err) {
+            console.error("Error writing users to file:", err);
+            return res.status (HttpCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user").end();
+        }
+    });
+}
+
+let lastId = users.length > 0 ? Math.max(...users.map(user => user.id)) : 0;
+
 
 USER_API.get('/:id', (req, res) => {
 
@@ -14,6 +36,10 @@ USER_API.get('/:id', (req, res) => {
 
     /// TODO: 
     // Return user object
+})
+
+USER_API.get('/', (req, res) => {
+    res.status(HttpCodes.SuccesfullRespons.Ok).send(users).end();
 })
 
 USER_API.post('/', (req, res, next) => {
@@ -27,20 +53,25 @@ USER_API.post('/', (req, res, next) => {
         const user = new User();
         user.name = name;
         user.email = email;
-
+        console.log(users)
         ///TODO: Do not save passwords.
         user.pswHash = password;
+        const exists = users.some(user => user.email === email);
+
 
         ///TODO: Does the user exist?
-        let exists = false;
 
         if (!exists) {
+            const id = ++lastId;
+            const user = { id, name, email, password };
+            
             users.push(user);
-            res.status(HttpCodes.SuccesfullRespons.Ok).end();
+            saveUsers();
+            
+            res.status(HttpCodes.SuccesfullRespons.Ok).send(users).end();
         } else {
-            res.status(HttpCodes.ClientSideErrorRespons.BadRequest).end();
+            res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send ("Bruker eksisterer allerede").end();
         }
-
     } else {
         res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("Mangler data felt").end();
     }
@@ -48,11 +79,39 @@ USER_API.post('/', (req, res, next) => {
 });
 
 USER_API.put('/:id', (req, res) => {
-    /// TODO: Edit user
+    /// TODO: Edit user()
+    const userId = parseInt(req.params.id, 10);
+    const { name, email, password } = req.body;
+
+    const userIndex = users.findIndex(user => user.id === userId);
+
+    if (userIndex !== -1) {
+
+        users[userIndex].name = name !== undefined ? name : users[userIndex].name;
+        users[userIndex].email = email !== undefined ? email : users[userIndex].email;
+        
+        saveUsers();
+
+        res.status(HttpCodes.SuccesfullRespons.Ok).send("User updated successfully!").end();
+    }else{
+        res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();
+    }
 })
 
 USER_API.delete('/:id', (req, res) => {
-    /// TODO: Delete user.
-})
+   const userId = parseInt(req.params.id, 10);
+
+    const userIndex = users.findIndex(user => user.id === userId);
+
+    if (userIndex !== -1) {
+        users.splice(userIndex, 1);
+
+        saveUsers();
+
+        res.status(HttpCodes.SuccesfullRespons.Ok).send("User deleted successfully!").end();
+    }else{
+        res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();}
+
+});
 
 export default USER_API
