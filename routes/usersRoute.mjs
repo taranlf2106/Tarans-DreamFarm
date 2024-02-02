@@ -1,10 +1,12 @@
 import express, { response } from "express";
 import User from "../modules/user.mjs";
-import HttpCodes from "../modules/httpErrorCodes.mjs";
+import {HTTPCodes, HTTPMethods} from "../modules/httpConstants.mjs";
 import fs from "fs";
 
 
+
 const USER_API = express.Router();
+USER_API.use(express.json());
 
 const users = [];
 
@@ -21,7 +23,7 @@ function saveUsers(){
         fs.writeFile('users.json', JSON.stringify(users), 'utf8', (err) => {
         if (err) {
             console.error("Error writing users to file:", err);
-            return res.status (HttpCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user").end();
+            return res.status (HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user").end();
         }
     });
 }
@@ -29,7 +31,7 @@ function saveUsers(){
 let lastId = users.length > 0 ? Math.max(...users.map(user => user.id)) : 0;
 
 
-USER_API.get('/:id', (req, res) => {
+USER_API.get('/:id', (req, res, next) => {
 
     // Tip: All the information you need to get the id part of the request can be found in the documentation 
     // https://expressjs.com/en/guide/routing.html (Route parameters)
@@ -39,7 +41,7 @@ USER_API.get('/:id', (req, res) => {
 })
 
 USER_API.get('/', (req, res) => {
-    res.status(HttpCodes.SuccesfullRespons.Ok).send(users).end();
+    res.status(HTTPCodes.SuccesfullRespons.Ok).send(users).end();
 })
 
 USER_API.post('/', (req, res, next) => {
@@ -68,12 +70,12 @@ USER_API.post('/', (req, res, next) => {
             users.push(user);
             saveUsers();
             
-            res.status(HttpCodes.SuccesfullRespons.Ok).send(users).end();
+            res.status(HTTPCodes.SuccesfullRespons.Ok).send(users).end();
         } else {
-            res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send ("Bruker eksisterer allerede").end();
+            res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send ("Bruker eksisterer allerede").end();
         }
     } else {
-        res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("Mangler data felt").end();
+        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("Mangler data felt").end();
     }
 
 });
@@ -92,9 +94,9 @@ USER_API.put('/:id', (req, res) => {
         
         saveUsers();
 
-        res.status(HttpCodes.SuccesfullRespons.Ok).send("User updated successfully!").end();
+        res.status(HTTPCodes.SuccesfullRespons.Ok).send("User updated successfully!").end();
     }else{
-        res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();
+        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();
     }
 })
 
@@ -108,9 +110,9 @@ USER_API.delete('/:id', (req, res) => {
 
         saveUsers();
 
-        res.status(HttpCodes.SuccesfullRespons.Ok).send("User deleted successfully!").end();
+        res.status(HTTPCodes.SuccesfullRespons.Ok).send("User deleted successfully!").end();
     }else{
-        res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();}
+        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();}
 
 });
 

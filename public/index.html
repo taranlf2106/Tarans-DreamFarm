@@ -10,7 +10,43 @@
 
 
 <body>
- 
+ <div>
+    Name: <input type="text" id="name"><br>
+    Email: <input type="text" id="email"><br>
+    Password: <input type="assword" id="password"><br>
+    <button id="createUserButton">Create User</button>
+</div>
+
+    <script>
+
+        const createUserButton = document.getElementById('createUserButton');
+
+        createUserButton.onclick = async function (e){
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const user = {name, email, pswHash};
+
+            const response = await postTo("/user", user);
+
+
+        }
+
+        async function postTo(url, data) {
+            const header = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            };
+           
+            const response = await fetch(url, header);
+            return response;
+        }
+    </script>
+
 </body>
 
 </html>
