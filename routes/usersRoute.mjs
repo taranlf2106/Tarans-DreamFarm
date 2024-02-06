@@ -1,6 +1,7 @@
 import express, { response } from "express";
 import User from "../modules/user.mjs";
-import {HTTPCodes, HTTPMethods} from "../modules/httpConstants.mjs";
+import { HTTPCodes } from "../modules/httpConstants.mjs";
+import SuperLogger from "../modules/superLogger.mjs";
 import fs from "fs";
 
 
@@ -8,7 +9,7 @@ import fs from "fs";
 const USER_API = express.Router();
 USER_API.use(express.json());
 
-const users = [];
+let users = [];
 
 try{
     const data = fs.readFileSync('users.json', 'utf8');
@@ -32,6 +33,8 @@ let lastId = users.length > 0 ? Math.max(...users.map(user => user.id)) : 0;
 
 
 USER_API.get('/:id', (req, res, next) => {
+    SuperLogger.log("Demo of logging tool");
+    SuperLogger.log("A important msg", SuperLogger.LOGGING_LEVELS.DEBUG);
 
     // Tip: All the information you need to get the id part of the request can be found in the documentation 
     // https://expressjs.com/en/guide/routing.html (Route parameters)
@@ -40,7 +43,7 @@ USER_API.get('/:id', (req, res, next) => {
     // Return user object
 })
 
-USER_API.get('/', (req, res) => {
+USER_API.get('/', (req, res, next) => {
     res.status(HTTPCodes.SuccesfullRespons.Ok).send(users).end();
 })
 

@@ -1,5 +1,6 @@
 import Chalk from "chalk";
 import { HTTPMethods } from "./httpConstants.mjs"
+import fs from "fs/promises";   
 
 
 let COLORS = {}; 
@@ -47,6 +48,15 @@ class SuperLogger {
         return SuperLogger.instance;
     }
     
+    static log(msg, logLevl = SuperLogger.LOGGING_LEVELS.NORMAL) {
+
+        let logger = SuperLogger.instance;
+        if (logger.#globalThreshold > logLevl) {
+            return;
+        }
+
+        logger.#writeToLog(msg);
+    }
 
 
     createAutoHTTPRequestLogger() {
@@ -79,12 +89,22 @@ class SuperLogger {
 
     
         type = colorize(type);
-        console.log(when, type, path);
+        this.#writeToLog([type, path, when].join(" "));    
 
         next();
+    }
+
+    #writeToLog(msg) {
+        
+        msg += "\n";
+        console.log(msg);
+        ///TODO: The files should be based on current date.
+        fs.appendFile("./log.txt", msg, (err) => {});
+        fs.appendFile("./log.txt", msg, { encoding: "utf8" }, (err) => {});
+
     }
 
 }
 
 
-export default SuperLogger
+export default SuperLogger;
