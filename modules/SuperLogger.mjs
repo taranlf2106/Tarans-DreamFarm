@@ -2,7 +2,6 @@ import Chalk from "chalk";
 import { HTTPMethods } from "./httpConstants.mjs"
 import fs from "fs/promises";   
 
-
 let COLORS = {}; 
 COLORS[HTTPMethods.POST] = Chalk.yellow;
 COLORS[HTTPMethods.PATCH] = Chalk.yellow;
@@ -11,7 +10,7 @@ COLORS[HTTPMethods.GET] = Chalk.green;
 COLORS[HTTPMethods.DELETE] = Chalk.red;
 COLORS.Default = Chalk.gray;
 
-
+//test push
 const colorize = (method) => {
     if (method in COLORS) {
         return COLORS[method](method);
