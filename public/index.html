@@ -10,42 +10,60 @@
 
 
 <body>
- <div>
-    Name: <input type="text" id="name"><br>
-    Email: <input type="text" id="email"><br>
-    Password: <input type="assword" id="password"><br>
-    <button id="createUserButton">Create User</button>
-</div>
+
+    <button id="openModalButton">Open Login Modal</button>
+
+    <div id="loginModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            Name: <input type="text" id="name"><br>
+            Email: <input type="text" id="email"><br>
+            Password: <input type="password" id="password"><br>
+            <button id="createUserButton">Create User</button>
+        </div>
+    </div>
 
     <script>
 
-        const createUserButton = document.getElementById('createUserButton');
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById("openModalButton");
+    const modal = document.getElementById("loginModal");
+    const span = document.getElementsByClassName("close")[0];
 
-        createUserButton.onclick = async function (e){
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            const user = {name, email, pswHash};
-
-            const response = await postTo("/user", user);
-
-
+    btn.onclick = () => modal.style.display = "block";
+    span.onclick = () => modal.style.display = "none";
+    window.onclick = event => {
+        if (event.target == modal) {
+            modal.style.display = "none";
         }
+    }
 
-        async function postTo(url, data) {
-            const header = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-            };
-           
-            const response = await fetch(url, header);
-            return response;
+    // Handle user creation
+    document.getElementById("createUserButton").addEventListener("click", async () => {
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const response = await fetch('/user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, password })
+        });
+
+        if (response.ok) {
+            console.log("User created successfully");
+            modal.style.display = "none";
+        } else {
+            console.error("Failed to create user");
         }
-    </script>
+    });
+});
+</script>
+
 
 </body>
 

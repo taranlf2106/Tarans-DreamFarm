@@ -19,12 +19,45 @@ try{
     console.error("Failed to read users from file, starting with an emty array.", err);
 }
 
-function saveUsers(){
+// Password verification function
+function verifyPassword(userPassword, storedPasswordHash) {
+    // Simplified for demonstration
+    return userPassword === storedPasswordHash;
+}
 
-        fs.writeFile('users.json', JSON.stringify(users), 'utf8', (err) => {
+
+
+// Login route
+/* USER_API.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    //const user = users.find(user => user.email === email);
+    
+    if (user && verifyPassword(password, user.pswHash)) {
+        res.status(HTTPCodes.SuccesfullRespons.Ok).send({ message: "Login successful" });
+    } else {
+        res.status(HTTPCodes.ClientSideErrorRespons.Unauthorized).send("Invalid email or password");
+    }
+});
+ */
+
+USER_API.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    const user = users.find(user => user.email === email);
+    
+    if (user && verifyPassword(password, user.pswHash)) {
+        res.status(HTTPCodes.SuccesfullRespons.Ok).send({ message: "Login successful" });
+    } else {
+        res.status(HTTPCodes.ClientSideErrorRespons.Unauthorized).send("Invalid email or password");
+    }
+});
+
+function saveUsers(callback) {
+    fs.writeFile('users.json', JSON.stringify(users, null, 2), 'utf8', err => {
         if (err) {
             console.error("Error writing users to file:", err);
-            return res.status (HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user").end();
+            if (callback) callback(err);
+        } else {
+            if (callback) callback(null);
         }
     });
 }
@@ -47,14 +80,36 @@ USER_API.get('/', (req, res, next) => {
     res.status(HTTPCodes.SuccesfullRespons.Ok).send(users).end();
 })
 
-USER_API.post('/', (req, res, next) => {
+//USER_API.post('/', (req, res, next) => {
+
+    USER_API.post('/', (req, res) => {
+        const { name, email, password } = req.body;
+    
+        if (!name || !email || !password) {
+            return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("Missing data fields");
+        }
+    
+        if (users.some(user => user.email === email)) {
+            return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists");
+        }
+    
+        const newUser = { id: ++lastId, name, email, pswHash: password }; // Hash password in production
+        users.push(newUser);
+        saveUsers(err => {
+            if (err) {
+                return res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user");
+            }
+            res.status(HTTPCodes.SuccesfullRespons.Ok).send({ id: newUser.id, name, email }); // Exclude password from response
+        });
+    });
+
 
     // This is using javascript object destructuring.
     // Recomend reading up https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#syntax
     // https://www.freecodecamp.org/news/javascript-object-destructuring-spread-operator-rest-parameter/
-    const { name, email, password } = req.body;
+    //const { name, email, password } = req.body;
 
-    if (name != "" && email != "" && password != "") {
+/*     if (name != "" && email != "" && password != "") {
         const user = new User();
         user.name = name;
         user.email = email;
@@ -81,7 +136,7 @@ USER_API.post('/', (req, res, next) => {
         res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("Mangler data felt").end();
     }
 
-});
+}); */
 
 USER_API.put('/:id', (req, res) => {
     /// TODO: Edit user()
