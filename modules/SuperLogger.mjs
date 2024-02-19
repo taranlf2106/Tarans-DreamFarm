@@ -10,7 +10,7 @@ COLORS[HTTPMethods.GET] = Chalk.green;
 COLORS[HTTPMethods.DELETE] = Chalk.red;
 COLORS.Default = Chalk.gray;
 
-//test push
+
 const colorize = (method) => {
     if (method in COLORS) {
         return COLORS[method](method);

@@ -80,3 +80,13 @@ GET /favicon.ico 3:03:00 PM
 [32mGET[39m /media/bakgrunn.png 2:05:34 PM
 [33mPOST[39m /user 2:05:41 PM
 [33mPOST[39m /user 2:05:41 PM
+[32mGET[39m / 1:09:36 PM
+[32mGET[39m / 1:09:36 PM
+[32mGET[39m /index.css 1:09:36 PM
+[32mGET[39m /index.css 1:09:36 PM
+[32mGET[39m /media/TaransDreamFarm.png 1:09:36 PM
+[32mGET[39m /media/TaransDreamFarm.png 1:09:36 PM
+[32mGET[39m /media/bakgrunn.png 1:09:36 PM
+[32mGET[39m /media/bakgrunn.png 1:09:36 PM
+[32mGET[39m /favicon.ico 1:09:36 PM
+[32mGET[39m /favicon.ico 1:09:36 PM

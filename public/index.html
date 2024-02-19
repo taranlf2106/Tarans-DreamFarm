@@ -4,65 +4,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tarans dreamFarm2</title>
+    <title>Tarans dreamFarm</title>
     <link rel="stylesheet" href="index.css">
 </head>
 
 
 <body>
 
-    <button id="openModalButton">Open Login Modal</button>
+
+    <button id="openModalButton">Registrer deg </button>
 
     <div id="loginModal" class="modal">
         <!-- Modal content -->
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Login</h2>
-            Name: <input type="text" id="name"><br>
+            Navn: <input type="text" id="name"><br>
             Email: <input type="text" id="email"><br>
-            Password: <input type="password" id="password"><br>
+            Passord: <input type="password" id="password"><br>
             <button id="createUserButton">Create User</button>
         </div>
     </div>
 
-    <script>
+    <button id="openLoginModalButton">Logg inn</button>
 
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById("openModalButton");
-    const modal = document.getElementById("loginModal");
-    const span = document.getElementsByClassName("close")[0];
+<div id="loginModal" class="modal">
+    <!-- Login Modal content -->
+    <div class="modal-content">
+        <span class="closeLogin">&times;</span>
+        <h2>Login</h2>
+        Email: <input type="text" id="loginEmail"><br>
+        Password: <input type="password" id="loginPassword"><br>
+        <button id="loginButton">Logg inn</button>
+    </div>
+</div>
 
-    btn.onclick = () => modal.style.display = "block";
-    span.onclick = () => modal.style.display = "none";
-    window.onclick = event => {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
+<img id="startPageImage" src="media/TaransDreamFarm.png" alt="Tarans Dream Farm">
 
-    // Handle user creation
-    document.getElementById("createUserButton").addEventListener("click", async () => {
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const registerBtn = document.getElementById("openModalButton");
+        const loginBtn = document.getElementById("openLoginModalButton");
+        const modal = document.getElementById("loginModal");
+        const loginModal = document.getElementById("loginModal");
+        const span = document.getElementsByClassName("close")[0];
+        const spanLogin = document.getElementsByClassName("closeLogin")[0];
+        const startPageImage = document.getElementById("startPageImage");
 
-        const response = await fetch('/user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, email, password })
+        const hideStartPageImage = () => startPageImage.style.display = "none";
+
+        registerBtn.onclick = () => {
+        modal.style.display = "block";
+        hideStartPageImage();
+    };
+
+    loginBtn.onclick = () => {
+        loginModal.style.display = "block";
+        hideStartPageImage();
+    };
+    
+        registerBtn.onclick = () => modal.style.display = "block";
+        loginBtn.onclick = () => loginModal.style.display = "block";
+    
+        span.onclick = () => modal.style.display = "none";
+        spanLogin.onclick = () => loginModal.style.display = "none";
+    
+        window.onclick = event => {
+            if (event.target == modal || event.target == loginModal) {
+                modal.style.display = "none";
+                loginModal.style.display = "none";
+            }
+        };
+    
+        // Handle user registration (existing code)
+        document.getElementById("createUserButton").addEventListener("click", async () => {
+           
         });
-
-        if (response.ok) {
-            console.log("User created successfully");
-            modal.style.display = "none";
-        } else {
-            console.error("Failed to create user");
-        }
+    
+        // Handle user login
+        document.getElementById("loginButton").addEventListener("click", async () => {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+    
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+    
+            if (response.ok) {
+                console.log("Login successful");
+                loginModal.style.display = "none";
+            } else {
+                console.error("Failed to login");
+            }
+        });
     });
-});
-</script>
+    </script>
+     
 
 
 </body>

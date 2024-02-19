@@ -5,6 +5,37 @@ body {
     background-position: center;
 }
 
+#startPageImage {
+  width: 100%; /* Adjust the width as needed, or set a max-width */
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Use block layout */
+  margin: 0 auto; /* Center if needed */
+}
+
+.button-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 10px;
+  z-index: 2;
+}
+
+button {
+  background-color: #ff69b4;
+  color: white;
+  padding: 10px 20px;
+  border: 2px solid white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+button:hover {
+  background-color: #ff85c1;
+  border-color: #ff85c1;
+}
+
 /* The Modal (background) */
 .modal {
     display: none; /* Hidden by default */
@@ -15,30 +46,51 @@ body {
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  }
-  
-  /* Modal Content */
-  .modal-content {
-    background-color: #fefefe;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #ff69b4; /* Matching button pink background */
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
+    border-radius: 5px; /* Rounded corners for modal */
     width: 80%; /* Could be more or less, depending on screen size */
-  }
-  
-  /* The Close Button */
-  .close {
-    color: #aaa;
+    color: white; /* White text for content */
+}
+
+/* Input fields styling */
+.modal-content input[type="text"],
+.modal-content input[type="password"] {
+    width: 95%; /* Adjust width as needed */
+    padding: 10px;
+    margin: 5px 0 22px 0; /* Some margin */
+    display: inline-block;
+    border: none;
+    background: #f1f1f1;
+    border-radius: 5px; /* Rounded corners for input fields */
+}
+
+/* Enhance input field focus */
+.modal-content input[type="text"]:focus,
+.modal-content input[type="password"]:focus {
+    background-color: #ddd;
+    outline: none;
+}
+
+/* The Close Button */
+.close {
+    color: white; /* Adjust close button color to white */
     float: right;
     font-size: 28px;
     font-weight: bold;
-  }
-  
-  .close:hover,
-  .close:focus {
+}
+
+.close:hover,
+.close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
-  }
+}
+

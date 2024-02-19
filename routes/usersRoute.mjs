@@ -1,6 +1,7 @@
 import express, { response } from "express";
 import User from "../modules/user.mjs";
 import { HTTPCodes } from "../modules/httpConstants.mjs";
+import pool from '../db.mjs';
 import SuperLogger from "../modules/superLogger.mjs";
 import fs from "fs";
 
@@ -26,19 +27,6 @@ function verifyPassword(userPassword, storedPasswordHash) {
 }
 
 
-
-// Login route
-/* USER_API.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    //const user = users.find(user => user.email === email);
-    
-    if (user && verifyPassword(password, user.pswHash)) {
-        res.status(HTTPCodes.SuccesfullRespons.Ok).send({ message: "Login successful" });
-    } else {
-        res.status(HTTPCodes.ClientSideErrorRespons.Unauthorized).send("Invalid email or password");
-    }
-});
- */
 
 USER_API.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -82,25 +70,28 @@ USER_API.get('/', (req, res, next) => {
 
 //USER_API.post('/', (req, res, next) => {
 
-    USER_API.post('/', (req, res) => {
+    USER_API.post('/', async (req, res) => {
         const { name, email, password } = req.body;
+
+        
     
-        if (!name || !email || !password) {
-            return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("Missing data fields");
-        }
-    
-        if (users.some(user => user.email === email)) {
+        const existsResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existsResult.rows.length) {
             return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists");
         }
-    
-        const newUser = { id: ++lastId, name, email, pswHash: password }; // Hash password in production
-        users.push(newUser);
-        saveUsers(err => {
-            if (err) {
-                return res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user");
-            }
-            res.status(HTTPCodes.SuccesfullRespons.Ok).send({ id: newUser.id, name, email }); // Exclude password from response
-        });
+      
+        // Insert new user
+        try {
+            const insertResult = await pool.query(
+                'INSERT INTO users (name, email, pswHash) VALUES ($1, $2, $3) RETURNING id',
+                [name, email, password] // Consider hashing the password before storing it
+            );
+            const newUser = insertResult.rows[0];
+            res.status(HTTPCodes.SuccesfullRespons.Ok).send({ id: newUser.id, name, email });
+        } catch (err) {
+            console.error("Error saving user to database:", err);
+            res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user");
+        }
     });
 
 
