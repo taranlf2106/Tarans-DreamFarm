@@ -1,7 +1,7 @@
 import express, { response } from "express";
 import User from "../modules/user.mjs";
 import { HTTPCodes } from "../modules/httpConstants.mjs";
-import pool from '../db.mjs';
+import pool from '../modules/db.mjs';
 import SuperLogger from "../modules/superLogger.mjs";
 import fs from "fs";
 
