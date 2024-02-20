@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,30 +61,30 @@
         loginModal.style.display = "block";
         hideStartPageImage();
     };
-    
+
         registerBtn.onclick = () => modal.style.display = "block";
         loginBtn.onclick = () => loginModal.style.display = "block";
-    
+
         span.onclick = () => modal.style.display = "none";
         spanLogin.onclick = () => loginModal.style.display = "none";
-    
+
         window.onclick = event => {
             if (event.target == modal || event.target == loginModal) {
                 modal.style.display = "none";
                 loginModal.style.display = "none";
             }
         };
-    
+
         // Handle user registration (existing code)
         document.getElementById("createUserButton").addEventListener("click", async () => {
-           
+
         });
-    
+
         // Handle user login
         document.getElementById("loginButton").addEventListener("click", async () => {
             const email = document.getElementById("loginEmail").value;
             const password = document.getElementById("loginPassword").value;
-    
+
             const response = await fetch('/login', {
                 method: 'POST',
                 headers: {
@@ -93,7 +92,7 @@
                 },
                 body: JSON.stringify({ email, password })
             });
-    
+
             if (response.ok) {
                 console.log("Login successful");
                 loginModal.style.display = "none";
@@ -107,5 +106,5 @@
 
 
 </body>
-
 </html>
+

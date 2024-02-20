@@ -1,23 +1,15 @@
-
-
-// db.mjs
-import dotenv from 'dotenv';
 import pg from 'pg';
-
-// Make sure to call this as early as possible
-dotenv.config();
+import dotenv from 'dotenv';
 
 const { Pool } = pg;
 
-// Create a new pool using the connection details from .env
+dotenv.config();
+
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
+    connectionString: process.env.DB_CONNECTIONSTRING,
+    ssl: process.env.DB_SSL === 'true' ? {
+        rejectUnauthorized: false
+    } : false,
+  });
 
 export default pool;
-
-
