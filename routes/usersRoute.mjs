@@ -2,6 +2,7 @@ import express, { response } from "express";
 import User from "../modules/user.mjs";
 import {HTTPCodes, HTTPMethods} from "../modules/httpConstants.mjs";
 import fs from "fs";
+import pool from '../modules/db.mjs'; 
 
 
 
@@ -39,21 +40,40 @@ USER_API.get('/', (req, res) => {
     res.status(HTTPCodes.SuccesfullRespons.Ok).send(users).end();
 })
 
-USER_API.post('/register', (req, res) => {
+USER_API.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
-    const userExists = users.some(user => user.email === email);
-    if (userExists) {
-        return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists");
+    // Check if user already exists in the JSON array
+    const existsJson = users.some(user => user.email === email);
+    if (existsJson) {
+        return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists in JSON");
     }
 
-    // Create new user
-    const newUser = { id: users.length + 1, name, email, password };
-    users.push(newUser);
-    saveUsers(); // Save the updated users array to the file
+    // Check if user already exists in the database
+    try {
+        const userCheckQuery = 'SELECT * FROM users WHERE email = $1';
+        const checkResult = await pool.query(userCheckQuery, [email]);
+        if (checkResult.rows.length > 0) {
+            return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists in database");
+        }
 
-    res.status(HTTPCodes.SuccesfullRespons.Ok).send(newUser); // Respond with the created user
+        // Since user does not exist, proceed to insert into the database
+        // Note: Adjust the table name and column names as per your database schema
+        const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *';
+        const { rows } = await pool.query(insertQuery, [name, email, password]);
+        const newUserDb = rows[0]; // New user from database
+
+        // Assuming you still want to keep the local JSON storage as well
+        const newUserJson = { id: users.length + 1, name, email, password };
+        users.push(newUserJson);
+        saveUsers(); // Save the updated users array to the file
+
+        // Respond with the created user details from the database
+        res.status(HTTPCodes.SuccesfullRespons.Ok).json(newUserDb);
+    } catch (dbError) {
+        console.error("Database error:", dbError);
+        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user to database");
+    }
 });
 
 
