@@ -1,25 +1,30 @@
-import dotenv from 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express' // Express is installed using npm
 import USER_API from './routes/usersRoute.mjs'; // This is where we have defined the API for working with users.
 import SuperLogger from './modules/superLogger.mjs';
 import pool from './modules/db.mjs';
 
+
+
+
 const server = express();
 server.use(express.json());
-server.use('/user', USER_API);
 
-/*
+
+// Function to test database connection
 async function testDbConnection() {
     try {
-      const { rows } = await pool.query('SELECT NOW()');
-      console.log('Current time from PostgreSQL:', rows[0]);
+        const { rows } = await pool.query('SELECT NOW()'); // Use the pool variable
+        console.log('Database connection successful. Current time:', rows[0].now);
     } catch (error) {
-      console.error('Error testing the database connection:', error);
+        console.error('Failed to connect to the database:', error);
     }
-  }
-  */
-  //testDbConnection();
-// Selecting a port for the server to use.
+}
+
+// Immediately test DB connection when server starts
+testDbConnection();
+
+
 const port = (process.env.PORT || 8080);
 server.set('port', port);
 

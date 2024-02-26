@@ -13,14 +13,14 @@
 
     <button id="openModalButton">Registrer deg </button>
 
-    <div id="loginModal" class="modal">
+    <div id="registerModal" class="modal"> <!-- Change ID to registerModal -->
         <!-- Modal content -->
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Login</h2>
-            Navn: <input type="text" id="name"><br>
-            Email: <input type="text" id="email"><br>
-            Passord: <input type="password" id="password"><br>
+            Navn: <input type="text" id="registerName"><br> <!-- Keep the IDs for input fields -->
+            Email: <input type="text" id="registerEmail"><br>
+            Passord: <input type="password" id="registerPassword"><br>
             <button id="createUserButton">Create User</button>
         </div>
     </div>
@@ -41,18 +41,18 @@
 <img id="startPageImage" src="media/TaransDreamFarm.png" alt="Tarans Dream Farm">
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const registerBtn = document.getElementById("openModalButton");
-        const loginBtn = document.getElementById("openLoginModalButton");
-        const modal = document.getElementById("loginModal");
-        const loginModal = document.getElementById("loginModal");
-        const span = document.getElementsByClassName("close")[0];
-        const spanLogin = document.getElementsByClassName("closeLogin")[0];
-        const startPageImage = document.getElementById("startPageImage");
+document.addEventListener('DOMContentLoaded', () => {
+    const registerBtn = document.getElementById("openModalButton");
+    const loginBtn = document.getElementById("openLoginModalButton");
+    const modal = document.getElementById("registerModal"); // Change ID to registerModal
+    const loginModal = document.getElementById("loginModal");
+    const span = document.getElementsByClassName("close")[0];
+    const spanLogin = document.getElementsByClassName("closeLogin")[0];
+    const startPageImage = document.getElementById("startPageImage");
 
-        const hideStartPageImage = () => startPageImage.style.display = "none";
+    const hideStartPageImage = () => startPageImage.style.display = "none";
 
-        registerBtn.onclick = () => {
+    registerBtn.onclick = () => {
         modal.style.display = "block";
         hideStartPageImage();
     };
@@ -62,23 +62,54 @@
         hideStartPageImage();
     };
 
-        registerBtn.onclick = () => modal.style.display = "block";
-        loginBtn.onclick = () => loginModal.style.display = "block";
+    registerBtn.onclick = () => modal.style.display = "block";
+    loginBtn.onclick = () => loginModal.style.display = "block";
 
-        span.onclick = () => modal.style.display = "none";
-        spanLogin.onclick = () => loginModal.style.display = "none";
+    span.onclick = () => modal.style.display = "none";
+    spanLogin.onclick = () => loginModal.style.display = "none";
 
-        window.onclick = event => {
-            if (event.target == modal || event.target == loginModal) {
-                modal.style.display = "none";
-                loginModal.style.display = "none";
+    window.onclick = event => {
+        if (event.target == modal || event.target == loginModal) {
+            modal.style.display = "none";
+            loginModal.style.display = "none";
+        }
+    };
+
+    // Handle user registration
+    document.getElementById("createUserButton").addEventListener("click", async () => {
+        const name = document.getElementById("registerName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
+
+        try {
+            // Ensure the URL matches your server's listening address and endpoint
+            const response = await fetch('http://localhost:8080/user/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            if (response.ok) {
+                console.log("User registered successfully");
+                alert("User registered successfully.");
+                // Optionally, clear the form or close the modal here
+                modal.style.display = "none"; // Assuming 'modal' is the ID of your registration modal
+                document.getElementById("registerName").value = '';
+                document.getElementById("registerEmail").value = '';
+                document.getElementById("registerPassword").value = '';
+            } else {
+                console.error("Failed to register user");
+                alert("Failed to register user. Please try again.");
+                // Optionally, handle and display error message to the user
             }
-        };
-
-        // Handle user registration (existing code)
-        document.getElementById("createUserButton").addEventListener("click", async () => {
-
-        });
+        } catch (error) {
+            console.error("Error during user registration:", error);
+            alert("An error occurred during registration. Please try again.");
+            // Handle network errors or other issues here
+        }
+    });
 
         // Handle user login
         document.getElementById("loginButton").addEventListener("click", async () => {
@@ -100,6 +131,7 @@
                 console.error("Failed to login");
             }
         });
+
     });
     </script>
      

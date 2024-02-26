@@ -1,70 +1,79 @@
 import pg from 'pg';
-import SuperLogger from './superLogger.mjs';
+import dotenv from 'dotenv';
 
-if (process.env.DB_CONNECTINGSTRING == 'undefined') {
-    throw ("You forgot the db conntevting string")
-}
+dotenv.config();
+
+const { Pool } = pg;
 
 class DBManager {
+  #pool;
 
-    #credentials = {};
+  constructor() {
+    this.#pool = new Pool({
+      connectionString: process.env.DB_CONNECTIONSTRING,
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+    });
+  }
 
-    constructor(connectionString) {
-        this.#credentials = {
-            connectionString,
-            ssl: (process.env.DB_SSL == 'true') ? process.env.DB_SSL : false
-        };
+  async query(text, params) {
+    const client = await this.pool.connect();
+    try {
+      const res = await client.query(text, params);
+      return res;
+    } finally {
+      client.release();
     }
+  }
 
-    async updateUser(user) {
-
-        const client = new pg.Client(this.#credentials);
-        await client.connect();
-        
-        try {
-            await client.connect();
-            const output = await client.query('Update "public"."users" SET "name" = $1, "email" = $2, "pswhash" = $3 where "id" = $4', [user.name, user.email, user.pswHash, user.id]);
-        } catch (err) {
-        } finally {
-            await client.end();
-        }
+  // Method to add a new user
+  async createUser({ name, email, pswHash }) {
+    const queryText = 'INSERT INTO public.users (name, email, pswHash) VALUES ($1, $2, $3) RETURNING id, name, email';
+    const values = [name, email, pswHash];
+    try {
+      const { rows } = await this.#pool.query(queryText, values);
+      return rows[0];
+    } catch (err) {
+      console.error('Error creating user:', err);
+      throw err;
     }
+  }
 
-    async deleteUser(user) {
-
-        const client = new pg.Client(this.#credentials);
-      
-        
-        try {
-            await client.connect();
-            const output = await client.query('DELETE FROM "public"."users" WHERE "id" = $1', [user.id]);
-
-        } catch (err) {
-        } finally {
-            client.end();
-        }
-        return user;
+  // Method to update a user by ID
+  async updateUser(id, { name, email, pswHash }) {
+    const queryText = 'UPDATE public.users SET name = $1, email = $2, pswHash = $3 WHERE id = $4 RETURNING id, name, email';
+    const values = [name, email, pswHash, id];
+    try {
+      const { rows } = await this.#pool.query(queryText, values);
+      return rows[0];
+    } catch (err) {
+      console.error('Error updating user:', err);
+      throw err;
     }
+  }
 
-    async createUser(user) {
-
-        const client = new pg.Client(this.#credentials);
-        
-        try {
-            await client.connect();
-            const output = await client.query('INSERT INTO "public"."users" ("name", "email", "pswhash") VALUES ($1, $2, $3) RETURNING "id"', [user.name, user.email, user.pswHash]);
-           console.log("createuser is entered");
-            if (output.rows.length == 1) {
-                user.id = output.rows[0].id;
-            }
-
-        } catch (err) {
-            console.error(error);
-        } finally {
-            client.end();
-        }
-        return user;
+  // Method to delete a user by ID
+  async deleteUser(id) {
+    const queryText = 'DELETE FROM public.users WHERE id = $1 RETURNING id';
+    try {
+      const { rows } = await this.#pool.query(queryText, [id]);
+      return rows[0];
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      throw err;
     }
-};
+  }
 
-export default new DBManager(process.env.DB_CONNECTINGSTRING);
+  // Method to retrieve all users
+  async getUsers() {
+    const queryText = 'SELECT id, name, email FROM public.users';
+    try {
+      const { rows } = await this.#pool.query(queryText);
+      return rows;
+    } catch (err) {
+      console.error('Error retrieving users:', err);
+      throw err;
+    }
+  }
+}
+
+export default new DBManager();
