@@ -1,96 +1,124 @@
 body {
-    background-image: url('media/bakgrunn.png');
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
+  background-image: url('media/bakgrunn.png');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
 }
 
 #startPageImage {
-  width: 100%; /* Adjust the width as needed, or set a max-width */
-  height: auto; /* Maintain aspect ratio */
-  display: block; /* Use block layout */
-  margin: 0 auto; /* Center if needed */
+width: 100%;
+height: auto;
+display: block;
+margin: 0 auto;
 }
 
 .button-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 10px;
-  z-index: 2;
+position: absolute;
+top: 0;
+left: 0;
+margin: 10px;
+z-index: 2;
 }
 
 button {
-  background-color: #ff69b4;
-  color: white;
-  padding: 10px 20px;
-  border: 2px solid white;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s, border-color 0.3s;
+background-color: #ff69b4;
+color: white;
+padding: 10px 20px;
+border: 2px solid white;
+border-radius: 5px;
+cursor: pointer;
+font-size: 16px;
+transition: background-color 0.3s, border-color 0.3s;
 }
 
 button:hover {
-  background-color: #ff85c1;
-  border-color: #ff85c1;
+background-color: #ff85c1;
+border-color: #ff85c1;
 }
 
-/* The Modal (background) */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
 }
 
-/* Modal Content */
 .modal-content {
-    background-color: #ff69b4; /* Matching button pink background */
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 5px; /* Rounded corners for modal */
-    width: 80%; /* Could be more or less, depending on screen size */
-    color: white; /* White text for content */
+  background-color: #ff69b4;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 5px;
+  width: 80%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  max-height: 80vh;
 }
 
-/* Input fields styling */
 .modal-content input[type="text"],
 .modal-content input[type="password"] {
-    width: 95%; /* Adjust width as needed */
-    padding: 10px;
-    margin: 5px 0 22px 0; /* Some margin */
-    display: inline-block;
-    border: none;
-    background: #f1f1f1;
-    border-radius: 5px; /* Rounded corners for input fields */
-}
-
-/* Enhance input field focus */
-.modal-content input[type="text"]:focus,
-.modal-content input[type="password"]:focus {
-    background-color: #ddd;
-    outline: none;
-}
-
-/* The Close Button */
-.close {
-    color: white; /* Adjust close button color to white */
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+  width: 80%;
+  padding: 10px;
+  margin: 5px 0 22px 0;
+  display: inline-block;
+  border: none;
+  background: #f1f1f1;
+  border-radius: 5px;
 }
 
 .close:hover,
 .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#petOptions {
+display: flex;
+justify-content: center;
+flex-wrap: nowrap;
+gap: 10px;
+}
+
+.petOption {
+  width: 100px; /* Adjusted for visibility */
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s; /* Smooth transformation */
+  margin: 10px; /* Ensure some space around images */
+}
+
+.petOption:hover {
+  transform: scale(1.1); /* Slightly increase size */
+  border: 2px solid #ff85c1; /* Pink border for consistency with your theme */
+}
+
+.petOption.selected {
+  border: 3px solid #ff85c1; /* Example: bright pink border */
+  border-radius: 5px; /* Rounded corners */
+}
+
+#petDisplayArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.pet-display {
+  text-align: center;
+}
+
+.displayed-pet-image {
+  width: 100px; /* Adjust as needed */
+  height: auto;
 }
 

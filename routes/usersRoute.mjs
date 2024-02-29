@@ -9,106 +9,108 @@ import pool from '../modules/db.mjs';
 const USER_API = express.Router();
 USER_API.use(express.json());
 
-let users = [];
 
-try {
-    const data = fs.readFileSync('users.json', 'utf8');
-    users = JSON.parse(data);
-} catch (err) {
-    console.error("Failed to read users from file, starting with an empty array.", err);
-}
-
-
-function saveUsers() {
-    fs.writeFile('users.json', JSON.stringify(users), 'utf8', (err) => {
-        if (err) {
-            console.error("Error writing users to file:", err);
+// User retrieval by ID - assuming this remains the same, just as an example
+USER_API.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (result.rows.length > 0) {
+            res.status(HTTPCodes.SuccesfullRespons.Ok).json(result.rows[0]);
+        } else {
+            res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send("User not found");
         }
-    });
-}
-
-function getLastId() {
-    return users.reduce((maxId, user) => Math.max(maxId, user.id), 0);
-}
-
-USER_API.get('/:id', (req, res, next) => {
-
-
-})
-
-USER_API.get('/', (req, res) => {
-    res.status(HTTPCodes.SuccesfullRespons.Ok).send(users).end();
-})
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to retrieve user");
+    }
+});
 
 USER_API.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body; // Remove pettype and petname from destructuring
 
-    // Check if user already exists in the JSON array
-    const existsJson = users.some(user => user.email === email);
-    if (existsJson) {
-        return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists in JSON");
-    }
-
-    // Check if user already exists in the database
     try {
+        // Check if user already exists
         const userCheckQuery = 'SELECT * FROM users WHERE email = $1';
         const checkResult = await pool.query(userCheckQuery, [email]);
         if (checkResult.rows.length > 0) {
-            return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User already exists in database");
+            return res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ message: "User already exists in database" });
         }
 
-        // Since user does not exist, proceed to insert into the database
-        // Note: Adjust the table name and column names as per your database schema
-        const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *';
-        const { rows } = await pool.query(insertQuery, [name, email, password]);
-        const newUserDb = rows[0]; // New user from database
+        // Insert new user into database
+        const insertUserQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *'; // Remove pettype and petname from query
+        const userResult = await pool.query(insertUserQuery, [name, email, password]);
+        const newUser = userResult.rows[0];
 
-        // Assuming you still want to keep the local JSON storage as well
-        const newUserJson = { id: users.length + 1, name, email, password };
-        users.push(newUserJson);
-        saveUsers(); // Save the updated users array to the file
-
-        // Respond with the created user details from the database
-        res.status(HTTPCodes.SuccesfullRespons.Ok).json(newUserDb);
+        // Send back the newly created user
+        res.status(HTTPCodes.SuccesfullRespons.Ok).json(newUser);
     } catch (dbError) {
         console.error("Database error:", dbError);
-        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to save user to database");
+        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).json({ message: "Failed to save user to database" });
     }
 });
 
+// Add pet details to an existing user
 
-USER_API.put('/:id', (req, res) => {
-    /// TODO: Edit user()
-    const userId = parseInt(req.params.id, 10);
+USER_API.post('/register/pet', async (req, res) => {
+    const { userId } = req.params;
+    const { pettype, petname } = req.body;
+
+    try {
+        // Insert pet details for the specified user
+        const insertPetQuery = 'UPDATE users SET pettype = $1, petname = $2 WHERE id = $3 RETURNING *'; // Assuming you have columns for pet details in the users table
+        const result = await pool.query(insertPetQuery, [pettype, petname, userId]);
+
+        if (result.rows.length > 0) {
+            res.status(HTTPCodes.SuccesfullRespons.Ok).json(result.rows[0]);
+        } else {
+            res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send("User not found");
+        }
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to add pet details");
+    }
+});
+
+// User update
+USER_API.put('/:id', async (req, res) => {
+    const { id } = req.params;
     const { name, email, password } = req.body;
-    const userIndex = users.findIndex(user => user.id === userId);
-    if (userIndex !== -1) {
-        users[userIndex].name = name !== undefined ? name : users[userIndex].name;
-        users[userIndex].email = email !== undefined ? email : users[userIndex].email;
-
-        saveUsers();
-
-        res.status(HTTPCodes.SuccesfullRespons.Ok).send("User updated successfully!").end();
-    }else{
-        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();
+    
+    try {
+        const updateQuery = 'UPDATE users SET name = $1, email = $2, password = $3 WHERE id = $4 RETURNING *';
+        const result = await pool.query(updateQuery, [name, email, password, id]);
+        if (result.rows.length > 0) {
+            res.status(HTTPCodes.SuccesfullRespons.Ok).json(result.rows[0]);
+        } else {
+            res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send("User not found");
+        }
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to update user");
     }
-})
-
-USER_API.delete('/:id', (req, res) => {
-   const userId = parseInt(req.params.id, 10);
-    const userIndex = users.findIndex(user => user.id === userId);
-    if (userIndex !== -1) {
-        users.splice(userIndex, 1);
-
-        saveUsers();
-
-        res.status(HTTPCodes.SuccesfullRespons.Ok).send("User deleted successfully!").end();
-    }else{
-        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).send("User not found!").end();}
-
 });
 
-export default USER_API
+// User deletion
+USER_API.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const deleteQuery = 'DELETE FROM users WHERE id = $1 RETURNING *';
+        const result = await pool.query(deleteQuery, [id]);
+        if (result.rows.length > 0) {
+            res.status(HTTPCodes.SuccesfullRespons.Ok).send("User deleted successfully!");
+        } else {
+            res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send("User not found");
+        }
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to delete user");
+    }
+});
+
+export default USER_API;
+
 
     // This is using javascript object destructuring.
     // Recomend reading up https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#syntax

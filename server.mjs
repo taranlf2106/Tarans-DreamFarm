@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 import express from 'express' // Express is installed using npm
 import USER_API from './routes/usersRoute.mjs'; // This is where we have defined the API for working with users.
+import petsRoute from './routes/petsRoute.mjs';
 import SuperLogger from './modules/superLogger.mjs';
 import pool from './modules/db.mjs';
+import PET_API from './routes/petsRoute.mjs'; 
 
 
 
@@ -37,6 +39,8 @@ server.use(express.static('public'));
 
 // Telling the server to use the USER_API (all urls that uses this code will have to have the /user after the base address)
 server.use("/user", USER_API);
+server.use('/pets', PET_API);
+
 
 // A get request handler example)
 server.get("/", (req, res, next) => {

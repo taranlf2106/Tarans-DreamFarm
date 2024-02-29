@@ -26,17 +26,18 @@ class DBManager {
   }
 
   // Method to add a new user
-  async createUser({ name, email, pswHash }) {
-    const queryText = 'INSERT INTO public.users (name, email, pswHash) VALUES ($1, $2, $3) RETURNING id, name, email';
+  async createUser({ name, email, pswHash}) {
+    // Assuming your users table also has columns for petType and petName
+    const queryText = 'INSERT INTO public.users (name, email, pswHash, pettype, petName) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, petType, petName';
     const values = [name, email, pswHash];
     try {
       const { rows } = await this.#pool.query(queryText, values);
-      return rows[0];
+      return rows[0]; // This now includes petType and petName in the returned user object
     } catch (err) {
       console.error('Error creating user:', err);
       throw err;
     }
-  }
+}
 
   // Method to update a user by ID
   async updateUser(id, { name, email, pswHash }) {
@@ -71,6 +72,18 @@ class DBManager {
       return rows;
     } catch (err) {
       console.error('Error retrieving users:', err);
+      throw err;
+    }
+  }
+
+  async createPet({ userId, petType, petName }) {
+    const queryText = 'INSERT INTO pets (user_id, pet_type, pet_name) VALUES ($1, $2, $3) RETURNING *';
+    const values = [userId, petType, petName];
+    try {
+      const { rows } = await this.#pool.query(queryText, values);
+      return rows[0];
+    } catch (err) {
+      console.error('Error creating pet:', err);
       throw err;
     }
   }

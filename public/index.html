@@ -9,107 +9,162 @@
 
 
 <body>
+    <button id="openModalButton">Registrer deg</button>
 
-
-    <button id="openModalButton">Registrer deg </button>
-
-    <div id="registerModal" class="modal"> <!-- Change ID to registerModal -->
-        <!-- Modal content -->
+    <div id="registerModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Login</h2>
-            Navn: <input type="text" id="registerName"><br> <!-- Keep the IDs for input fields -->
+            Navn: <input type="text" id="registerName"><br>
             Email: <input type="text" id="registerEmail"><br>
             Passord: <input type="password" id="registerPassword"><br>
             <button id="createUserButton">Create User</button>
         </div>
     </div>
 
+    <div id="petSelectionModal" class="modal">
+        <div class="modal-content">
+            <span class="closePetSelection">&times;</span>
+            <h2>Choose Your Pet</h2>
+            <div id="petOptions">
+                <img src="media/Cat.png" alt="Cat" class="petOption" data-pet-type="cat">
+                <img src="media/Dog.png" alt="Dog" class="petOption" data-pet-type="dog">
+                <img src="media/Squirrel.png" alt="Squirrel" class="petOption" data-pet-type="squirrel">
+                <img src="media/Deer.png" alt="Deer" class="petOption" data-pet-type="deer">
+            </div>
+            <label for="petname">Pet's Name:</label>
+            <input type="text" id="petname" name="petname">
+            <button id="registerPetButton">Register Pet</button>
+        </div>
+    </div>
+
     <button id="openLoginModalButton">Logg inn</button>
 
-<div id="loginModal" class="modal">
-    <!-- Login Modal content -->
-    <div class="modal-content">
-        <span class="closeLogin">&times;</span>
-        <h2>Login</h2>
-        Email: <input type="text" id="loginEmail"><br>
-        Password: <input type="password" id="loginPassword"><br>
-        <button id="loginButton">Logg inn</button>
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="closeLogin">&times;</span>
+            <h2>Login</h2>
+            Email: <input type="text" id="loginEmail"><br>
+            Password: <input type="password" id="loginPassword"><br>
+            <button id="loginButton">Logg inn</button>
+        </div>
     </div>
-</div>
 
-<img id="startPageImage" src="media/TaransDreamFarm.png" alt="Tarans Dream Farm">
+    <div id="petDisplayArea"></div>
+
+    <img id="startPageImage" src="media/TaransDreamFarm.png" alt="Tarans Dream Farm">
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const registerBtn = document.getElementById("openModalButton");
     const loginBtn = document.getElementById("openLoginModalButton");
-    const modal = document.getElementById("registerModal"); // Change ID to registerModal
+    const registerModal = document.getElementById("registerModal");
     const loginModal = document.getElementById("loginModal");
-    const span = document.getElementsByClassName("close")[0];
-    const spanLogin = document.getElementsByClassName("closeLogin")[0];
-    const startPageImage = document.getElementById("startPageImage");
+    const petSelectionModal = document.getElementById("petSelectionModal");
+    const spanCloseRegister = document.querySelector(".close");
+    const spanCloseLogin = document.querySelector(".closeLogin");
+    const spanClosePetSelection = document.querySelector(".closePetSelection");
+    const petOptions = document.querySelectorAll('.petOption');
 
-    const hideStartPageImage = () => startPageImage.style.display = "none";
+    let selectedPetType
 
-    registerBtn.onclick = () => {
-        modal.style.display = "block";
-        hideStartPageImage();
+
+    // Function to hide all modals
+    const hideAllModals = () => {
+        registerModal.style.display = "none";
+        loginModal.style.display = "none";
+        petSelectionModal.style.display = "none";
     };
 
-    loginBtn.onclick = () => {
-        loginModal.style.display = "block";
-        hideStartPageImage();
-    };
-
-    registerBtn.onclick = () => modal.style.display = "block";
+    // Open modals
+    registerBtn.onclick = () => registerModal.style.display = "block";
     loginBtn.onclick = () => loginModal.style.display = "block";
 
-    span.onclick = () => modal.style.display = "none";
-    spanLogin.onclick = () => loginModal.style.display = "none";
+    // Close buttons
+    spanCloseRegister.onclick = () => registerModal.style.display = "none";
+    spanCloseLogin.onclick = () => loginModal.style.display = "none";
+    spanClosePetSelection.onclick = () => petSelectionModal.style.display = "none";
 
+    // Click outside to close
     window.onclick = event => {
-        if (event.target == modal || event.target == loginModal) {
-            modal.style.display = "none";
-            loginModal.style.display = "none";
+        if (event.target === registerModal || event.target === loginModal || event.target === petSelectionModal) {
+            hideAllModals();
         }
     };
+
+
 
     // Handle user registration
     document.getElementById("createUserButton").addEventListener("click", async () => {
-        const name = document.getElementById("registerName").value;
-        const email = document.getElementById("registerEmail").value;
-        const password = document.getElementById("registerPassword").value;
+    const name = document.getElementById("registerName").value;
+    const email = document.getElementById("registerEmail").value;
+    const password = document.getElementById("registerPassword").value;
 
-        try {
-            // Ensure the URL matches your server's listening address and endpoint
-            const response = await fetch('http://localhost:8080/user/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email, password })
-            });
 
-            if (response.ok) {
-                console.log("User registered successfully");
-                alert("User registered successfully.");
-                // Optionally, clear the form or close the modal here
-                modal.style.display = "none"; // Assuming 'modal' is the ID of your registration modal
-                document.getElementById("registerName").value = '';
-                document.getElementById("registerEmail").value = '';
-                document.getElementById("registerPassword").value = '';
-            } else {
-                console.error("Failed to register user");
-                alert("Failed to register user. Please try again.");
-                // Optionally, handle and display error message to the user
-            }
+    try {
+        const response = await fetch('http://localhost:8080/user/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, password })
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const userData = await response.json();
+            console.log("User registered successfully", userData);
+            alert("User registered successfully. Now choose your pet.");
+            localStorage.setItem('userId', userData.id); // Store user ID for pet registration
+            registerModal.style.display = "none"; // Hide user registration modal
+            petSelectionModal.style.display = "block"; // Show pet selection modal
         } catch (error) {
             console.error("Error during user registration:", error);
             alert("An error occurred during registration. Please try again.");
-            // Handle network errors or other issues here
         }
     });
+
+    //Pet selection inside the modal
+        petOptions.forEach(option => {
+        option.addEventListener('click', (event) => {
+        petOptions.forEach(opt => opt.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        selectedPetType = event.currentTarget.getAttribute('data-pet-type');
+        localStorage.setItem('selectedPetType', selectedPetType);
+        });
+    }); 
+
+
+    //Pet registration
+    document.getElementById("registerPetButton").addEventListener("click", async () => {
+        const petName = document.getElementById("petname").value;
+        const selectedPetType = localStorage.getItem('selectedPetType');
+        const userId = localStorage.getItem('userId'); // Retrieve user ID for pet association
+
+        try {
+            const response = await fetch('http://localhost:8080/pets/registerPet', { // Assuming this is your pet registration endpoint
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId, // Assuming your backend expects userId to associate pet
+                    petType: selectedPetType,
+                    petName,
+                }),
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            console.log("Pet registered successfully");
+            alert("Pet registered successfully.");
+            petSelectionModal.style.display = "none"; // Hide pet selection modal
+            // Optionally, redirect the user or clear local storage
+        } catch (error) {
+            console.error("There has been a problem with your fetch operation:", error);
+            alert("Failed to register pet. Please try again.");
+        }
+    });
+
+
 
         // Handle user login
         document.getElementById("loginButton").addEventListener("click", async () => {
@@ -131,12 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Failed to login");
             }
         });
-
     });
+
     </script>
-     
-
-
-</body>
-</html>
+     </body>
+     </html>
 
