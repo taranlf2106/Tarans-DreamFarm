@@ -26,23 +26,22 @@ class DBManager {
   }
 
   // Method to add a new user
-  async createUser({ name, email, pswHash}) {
-    // Assuming your users table also has columns for petType and petName
-    const queryText = 'INSERT INTO public.users (name, email, pswHash, pettype, petName) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, petType, petName';
-    const values = [name, email, pswHash];
+  async createUser({ name, email, password  }) {
+    const queryText = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *';
+    const values = [name, email, password ];
     try {
       const { rows } = await this.#pool.query(queryText, values);
-      return rows[0]; // This now includes petType and petName in the returned user object
+      return rows[0]; // Excludes password  from the returned user object
     } catch (err) {
       console.error('Error creating user:', err);
       throw err;
     }
-}
+  }
 
   // Method to update a user by ID
-  async updateUser(id, { name, email, pswHash }) {
-    const queryText = 'UPDATE public.users SET name = $1, email = $2, pswHash = $3 WHERE id = $4 RETURNING id, name, email';
-    const values = [name, email, pswHash, id];
+  async updateUser(id, { name, email, password  }) {
+    const queryText = 'UPDATE public.users SET name = $1, email = $2, password  = $3 WHERE id = $4 RETURNING id, name, email';
+    const values = [name, email, password , id];
     try {
       const { rows } = await this.#pool.query(queryText, values);
       return rows[0];
@@ -76,17 +75,29 @@ class DBManager {
     }
   }
 
+  async getUserById(id) {
+    const queryText = 'SELECT * FROM users WHERE id = $1';
+    const values = [id];
+    try {
+        const { rows } = await this.#pool.query(queryText, values);
+        return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+        console.error('Error retrieving user by ID:', err);
+        throw err;
+    }
+}
+
   async createPet({ userId, petType, petName }) {
     const queryText = 'INSERT INTO pets (user_id, pet_type, pet_name) VALUES ($1, $2, $3) RETURNING *';
     const values = [userId, petType, petName];
     try {
-      const { rows } = await this.#pool.query(queryText, values);
-      return rows[0];
+        const { rows } = await this.#pool.query(queryText, values);
+        return rows[0];
     } catch (err) {
-      console.error('Error creating pet:', err);
-      throw err;
+        console.error('Error creating pet:', err);
+        throw err; // Ensure this error is propagated back to the caller
     }
-  }
+}
 }
 
 export default new DBManager();

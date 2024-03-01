@@ -95,33 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Handle user registration
-    document.getElementById("createUserButton").addEventListener("click", async () => {
-    const name = document.getElementById("registerName").value;
-    const email = document.getElementById("registerEmail").value;
-    const password = document.getElementById("registerPassword").value;
+    document.getElementById("createUserButton").addEventListener("click", async (event) => {
+    event.preventDefault();
 
+        const name = document.getElementById("registerName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
 
-    try {
-        const response = await fetch('http://localhost:8080/user/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password })
-        });
-        
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        console.log("Attempting to register user", { name, email, password });
+
+        try {
+            const response = await fetch('http://localhost:8080/user/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const userData = await response.json();
-            console.log("User registered successfully", userData);
-            alert("User registered successfully. Now choose your pet.");
-            localStorage.setItem('userId', userData.id); // Store user ID for pet registration
-            registerModal.style.display = "none"; // Hide user registration modal
-            petSelectionModal.style.display = "block"; // Show pet selection modal
-        } catch (error) {
-            console.error("Error during user registration:", error);
-            alert("An error occurred during registration. Please try again.");
-        }
+        console.log("User registered successfully", userData);
+        alert("User registered successfully. Now choose your pet.");
+
+        // Store user ID for pet registration
+        localStorage.setItem('userId', userData.id);
+
+        // Hide user registration modal and show pet selection modal
+        document.getElementById("registerModal").style.display = "none";
+        document.getElementById("petSelectionModal").style.display = "block";
+    } catch (error) {
+        console.error("Error during user registration:", error);
+        alert("An error occurred during registration. Please try again.");
+    }
     });
 
     //Pet selection inside the modal
@@ -136,33 +145,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     //Pet registration
-    document.getElementById("registerPetButton").addEventListener("click", async () => {
-        const petName = document.getElementById("petname").value;
-        const selectedPetType = localStorage.getItem('selectedPetType');
-        const userId = localStorage.getItem('userId'); // Retrieve user ID for pet association
+// Assuming this is inside your DOMContentLoaded listener and after successful user registration
+document.getElementById("registerPetButton").addEventListener("click", async () => {
+    const petName = document.getElementById("petname").value;
+    const selectedPetType = localStorage.getItem('selectedPetType');
+    const userId = localStorage.getItem('userId'); // Ensure this is set during user registration
 
-        try {
-            const response = await fetch('http://localhost:8080/pets/registerPet', { // Assuming this is your pet registration endpoint
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId, // Assuming your backend expects userId to associate pet
-                    petType: selectedPetType,
-                    petName,
-                }),
-            });
+    try {
+        const response = await fetch('http://localhost:8080/pets/registerPet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId,
+                petType: selectedPetType,
+                petName,
+            }),
+        });
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            console.log("Pet registered successfully");
-            alert("Pet registered successfully.");
-            petSelectionModal.style.display = "none"; // Hide pet selection modal
-            // Optionally, redirect the user or clear local storage
-        } catch (error) {
-            console.error("There has been a problem with your fetch operation:", error);
-            alert("Failed to register pet. Please try again.");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    });
+
+        console.log("Pet registered successfully");
+        alert("Pet registered successfully.");
+        // Proceed with your logic after successful registration
+    } catch (error) {
+        console.error("Error during pet registration:", error);
+        alert("Failed to register pet. Please try again.");
+    }
+});
+
 
 
 
