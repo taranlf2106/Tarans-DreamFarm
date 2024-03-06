@@ -122,3 +122,74 @@ gap: 10px;
   height: auto;
 }
 
+.displayed-pet-image {
+  width: 150px; /* Make the image larger */
+  height: auto;
+  display: block; /* Ensure it's block level for margin auto to work */
+  margin: 0 auto; /* Center the image */
+}
+
+.pet-image {
+  width: 300px; /* Larger size for the pet image */
+  height: auto;
+  display: block;
+  margin: 20px auto; /* Center the image and move it down */
+  margin-top: 210px;
+}
+
+/* Styling for the name box under the pet image */
+.pet-name {
+  background-color: white;
+  border: 4px solid #ff69b4; /* Pink border */
+  color: black;
+  padding: 10px;
+  border-radius: 20px; /* Increased for more rounded edges */
+  font-size: 20px; /* Larger text for the pet name */
+  text-align: center;
+  display: block; /* Ensure it displays as a block */
+  margin: 0 auto; /* Center the name box under the image */
+  width: fit-content; /* Fit the content's width */
+  margin-top: -50px; /* Space between the image and the name */
+  font-family: 'Quicksand', sans-serif; /* Apply the Quicksand font */
+}
+
+/* Ensure the pet display area is styled to center content */
+#petDisplayArea {
+  
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center items horizontally */
+  gap: 20px; /* Space between items */
+}
+
+.my-info-button {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #ff69b4; /* Adjust color as needed */
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+}
+
+.my-info-button img {
+  width: 30px; /* Adjust size as needed */
+  height: auto;
+}
+
+/* You may already have modal styles, adjust as needed */
+.closeMyInfo:hover,
+.closeMyInfo:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pet-image {
+  width: 400px; /* Increase the size of the pet image */
+  height: auto;
+  display: block;
+  margin: 40px auto; /* Increase top margin to move it down and center the image */
+  margin-top: 50px; /* Adjust top margin to move the image down further if needed */
+}
