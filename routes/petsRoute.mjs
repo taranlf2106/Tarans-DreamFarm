@@ -1,41 +1,48 @@
 import express from "express";
-import basicAuthMiddleware from '../modules/BasicAuthMiddleware.mjs'; // Adjust this path to where your BasicAuthMiddleware is located
 import { HTTPCodes } from "../modules/httpConstants.mjs";
 import DBManager from '../modules/storageManager.mjs'; // Adjust this path to where your DBManager is located
+import authMiddleware from '../modules/authMiddleware.mjs';
 
 const PET_API = express.Router();
 
-PET_API.use(basicAuthMiddleware);
-
 
 // Endpoint for registering a new pet
-PET_API.post('/registerPet', async (req, res) => {
-    const { userId, petType, petName } = req.body;
+PET_API.post('/registerPet', authMiddleware, async (req, res) => { // Added authMiddleware to ensure authentication
+    // Assuming the authenticated user's ID is stored in req.user.id after successful authentication
+    const userId = req.user.id; // Use the authenticated user's ID instead of taking it from the body
+    const { petType, petName } = req.body;
     
-    if (!userId || !petType || !petName) {
-        return res.status(400).send("Missing required pet information");
+    if (!petType || !petName) {
+        return res.status(HTTPCodes.ClientError.BadRequest).send("Missing required pet information");
     }
 
     try {
-
-        
-        // Validate if user exists
-        const userExists = await DBManager.getUserById(userId);
-        if (!userExists) {
-            return res.status(404).send("User not found");
-        }
-
-        // Create the pet
+        // No need to check for user existence here since authMiddleware ensures the user is authenticated
         const newPet = await DBManager.createPet({ userId, petType, petName });
         if (newPet) {
-            res.status(200).send(`Pet registered successfully with ID: ${newPet.id}`);
+            res.status(HTTPCodes.Successful.Created).json(newPet); // Assuming createPet returns the new pet object
         } else {
-            // Handle case where pet couldn't be created
-            res.status(500).send("Failed to register pet");
+            res.status(HTTPCodes.ServerError.InternalServerError).send("Failed to register pet");
         }
     } catch (dbError) {
         console.error("Database error:", dbError);
-        res.status(500).send("Failed to register pet due to server error");
+        res.status(HTTPCodes.ServerError.InternalServerError).send("Failed to register pet due to server error");
+    }
+});
+
+PET_API.get('/user-pets', authMiddleware, async (req, res) => { // Using authMiddleware to ensure only authenticated users can access this endpoint
+    const userId = req.user.id; // Use the authenticated user's ID to fetch pets
+
+    try {
+        const pets = await DBManager.getPetByUserId(userId);
+        if (pets.length > 0) {
+            res.status(HTTPCodes.Successful.Ok).json(pets); // Send back the array of pets associated with the authenticated user
+        } else {
+            res.status(HTTPCodes.ClientError.NotFound).send("No pets found for the user");
+        }
+    } catch (error) {
+        console.error("Error fetching pets:", error);
+        res.status(HTTPCodes.ServerError.InternalServerError).send("Failed to fetch pets due to server error");
     }
 });
 

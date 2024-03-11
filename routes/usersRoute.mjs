@@ -5,14 +5,11 @@ import fs from "fs";
 import pool from '../modules/db.mjs'; 
 import DBManager from '../modules/storageManager.mjs';
 import bcrypt from 'bcrypt';
-import { basicAuthMiddleware } from '../modules/basicAuthMiddleware.mjs';
-
+import authMiddleware from '../modules/authMiddleware.mjs';
 
 
 
 const USER_API = express.Router();
-
-USER_API.use(basicAuthMiddleware);
 
 // User retrieval by ID
 USER_API.get('/:id', async (req, res) => {
@@ -96,39 +93,61 @@ USER_API.delete('/:id', async (req, res) => {
 
 // Assuming you have session management set up with express-session or a similar package
 USER_API.post('/login', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-      return res.status(401).json({ message: 'Missing or invalid Authorization header' });
-  }
+  const { email, password } = req.body; // Extracting email and password from request body
 
-  const base64Credentials = authHeader.split(' ')[1];
-  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-  const [email, password] = credentials.split(':');
-  
   try {
+      // Attempt to find the user by their email
       const user = await DBManager.findUserByEmail(email);
       
+      // If no user is found with the provided email
       if (!user) {
-          return res.status(404).json({ message: 'User not found' });
+          return res.status(404).send('User not found');
       }
 
+      // Compare the plaintext password with the hashed password stored in the database
       const match = await bcrypt.compare(password, user.password);
       
+      // If passwords do not match
       if (!match) {
-          return res.status(401).json({ message: 'Invalid credentials' });
+          return res.status(401).send('Invalid credentials');
       }
 
-      // Successfully authenticated
-      // For security reasons, exclude the password or any sensitive information before sending the user data
+      // If passwords match, proceed with the login process
+      // For security, don't send the password hash back to the client
       const { password: _, ...userWithoutPassword } = user;
 
-      // Respond with user data or a token (assuming you have a token generation step here)
-      res.json({ message: 'Login successful', user: userWithoutPassword });
+      // Respond with the user data (excluding the password)
+      const pet = await DBManager.getPetByUserId(user.id);
+
+      // For security, don't send the password hash back to the client
+
+      // Respond with the user data (excluding the password) and pet information
+      res.json({ user: userWithoutPassword, pet });
   } catch (error) {
       console.error('Error during login:', error);
-      res.status(500).json({ message: 'An error occurred during login' });
+      res.status(500).send('An error occurred during login');
   }
+});
+
+USER_API.get('/my-pets', authMiddleware, async (req, res) => {
+  // Using the authenticated user's ID from the session
+  const userId = req.user.id;
+  try {
+      const pets = await DBManager.getPetByUserId(userId);
+      if (pets.length > 0) {
+          res.json(pets); // Send the pet information back to the client
+      } else {
+          res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send('No pets found for the user');
+      }
+  } catch (error) {
+      console.error('Error fetching pets by user ID:', error);
+      res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send('An error occurred while fetching pets information');
+  }
+});
+
+USER_API.get('/protected-user-info', authMiddleware, async (req, res) => {
+  // This route is protected, so you can access user details safely here
+  res.json({ message: 'Access to protected user information granted.', user: req.user });
 });
 
 
@@ -136,11 +155,3 @@ USER_API.post('/login', async (req, res) => {
 export default USER_API;
 
 
-    // This is using javascript object destructuring.
-    // Recomend reading up https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#syntax
-    // https://www.freecodecamp.org/news/javascript-object-destructuring-spread-operator-rest-parameter/
-
-    // Tip: All the information you need to get the id part of the request can be found in the documentation 
-    // https://expressjs.com/en/guide/routing.html (Route parameters)
-    /// TODO: 
-    // Return user object

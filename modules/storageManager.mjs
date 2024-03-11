@@ -41,9 +41,10 @@ class DBManager {
 
 
   // Method to update a user by ID
-  async updateUser(id, { name, email, password  }) {
-    const queryText = 'UPDATE public.users SET name = $1, email = $2, password  = $3 WHERE id = $4 RETURNING id, name, email';
-    const values = [name, email, password , id];
+  async updateUser(id, { name, email, password }) {
+    const hashedPassword = await bcrypt.hash(password, 12); // Hash the password
+    const queryText = 'UPDATE public.users SET name = $1, email = $2, password = $3 WHERE id = $4 RETURNING id, name, email';
+    const values = [name, email, hashedPassword, id]; // Use the hashed password here
     try {
       const { rows } = await this.#pool.query(queryText, values);
       return rows[0];
@@ -51,7 +52,7 @@ class DBManager {
       console.error('Error updating user:', err);
       throw err;
     }
-  }
+}
 
   // Method to delete a user by ID
   async deleteUser(id) {
