@@ -5,10 +5,14 @@ import fs from "fs";
 import pool from '../modules/db.mjs'; 
 import DBManager from '../modules/storageManager.mjs';
 import bcrypt from 'bcrypt';
+import { basicAuthMiddleware } from '../modules/basicAuthMiddleware.mjs';
+
 
 
 
 const USER_API = express.Router();
+
+USER_API.use(basicAuthMiddleware);
 
 // User retrieval by ID
 USER_API.get('/:id', async (req, res) => {
@@ -92,54 +96,38 @@ USER_API.delete('/:id', async (req, res) => {
 
 // Assuming you have session management set up with express-session or a similar package
 USER_API.post('/login', async (req, res) => {
-  const { email, password } = req.body; // Extracting email and password from request body
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+      return res.status(401).json({ message: 'Missing or invalid Authorization header' });
+  }
 
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [email, password] = credentials.split(':');
+  
   try {
-      // Attempt to find the user by their email
       const user = await DBManager.findUserByEmail(email);
       
-      // If no user is found with the provided email
       if (!user) {
-          return res.status(404).send('User not found');
+          return res.status(404).json({ message: 'User not found' });
       }
 
-      // Compare the plaintext password with the hashed password stored in the database
       const match = await bcrypt.compare(password, user.password);
       
-      // If passwords do not match
       if (!match) {
-          return res.status(401).send('Invalid credentials');
+          return res.status(401).json({ message: 'Invalid credentials' });
       }
 
-      // If passwords match, proceed with the login process
-      // For security, don't send the password hash back to the client
+      // Successfully authenticated
+      // For security reasons, exclude the password or any sensitive information before sending the user data
       const { password: _, ...userWithoutPassword } = user;
 
-      // Respond with the user data (excluding the password)
-      const pet = await DBManager.getPetByUserId(user.id);
-
-      // For security, don't send the password hash back to the client
-
-      // Respond with the user data (excluding the password) and pet information
-      res.json({ user: userWithoutPassword, pet });
+      // Respond with user data or a token (assuming you have a token generation step here)
+      res.json({ message: 'Login successful', user: userWithoutPassword });
   } catch (error) {
       console.error('Error during login:', error);
-      res.status(500).send('An error occurred during login');
-  }
-});
-
-USER_API.get('/pets/:userId', async (req, res) => {
-  const { userId } = req.params; // Extract the userId from URL parameters
-  try {
-      const pets = await dbManager.getPetByUserId(userId); // Fetch pets associated with the userId
-      if (pets.length > 0) {
-          res.json(pets); // Send the pet information back to the client
-      } else {
-          res.status(404).send('No pets found for the given user ID');
-      }
-  } catch (error) {
-      console.error('Error fetching pets by user ID:', error);
-      res.status(500).send('An error occurred while fetching pets information');
+      res.status(500).json({ message: 'An error occurred during login' });
   }
 });
 

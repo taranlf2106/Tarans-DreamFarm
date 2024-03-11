@@ -280,78 +280,79 @@ function displayPetAndUserInfo(userData) {
     if (userInfoArea) {
         userInfoArea.textContent = `Welcome, ${userData.name}!`; // Customize as needed
     }
-    // Update pet info similarly
 }
 
 
-    //Login
- 
+document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById("loginButton");
-if (loginButton) {
-    loginButton.addEventListener("click", async () => {
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
 
-        try {
-            const response = await fetch('http://localhost:8080/user/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+    if (loginButton) {
+        loginButton.addEventListener("click", async () => {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+            const base64Credentials = btoa(`${email}:${password}`);
 
-            if (!response.ok) {
-    throw new Error(`Login failed: ${response.statusText}`);
-}
+            try {
+                // Ensure your server is set up to handle Basic Auth on this route
+                const response = await fetch('http://localhost:8080/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${base64Credentials}`,
+                    }
+                });
 
-const userData = await response.json();
-console.log("Login successful", userData);
+                if (!response.ok) {
+                    throw new Error(`Login failed: ${response.statusText}`);
+                }
 
-document.getElementById("loginModal").style.display = "none";
+                const userData = await response.json();
+                console.log("Login successful", userData);
 
-document.getElementById("startPageImage").style.display = "none";
+                document.getElementById("loginModal").style.display = "none";
+                document.getElementById("startPageImage").style.display = "none";
 
-            // Assuming pet data is correctly included in the response and you want to display the first pet
-            const petData = userData.pet[0]; // Adjust based on actual response structure
-            if (petData) {
-                displayPet(petData.pet_name, petData.pet_type); // Assuming your pet object includes 'pet_name' and 'pet_type'
-            } else {
-                console.log("No pet data available for this user.");
+                // Display user name somewhere in your UI
+                const userInfoArea = document.getElementById("userInfoName"); // Update this ID as necessary
+                if (userInfoArea && userData.user) { // Assuming userData has a user object with name
+                    userInfoArea.textContent = `Name: ${userData.user.name}`;
+                }
+
+                // Check and display pet data
+                if (userData.pet && userData.pet.length > 0) {
+                    const { pet_name, pet_type } = userData.pet[0]; // Adjust based on your actual data structure
+                    displayPet(pet_name, pet_type);
+                } else {
+                    console.log("No pet data available for this user.");
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("Login failed, please try again.");
             }
-        } catch (error) {
-            console.error("Login error:", error);
-            alert("Login failed, please try again.");
-        }
-    });
-} else {
-    console.error("Element with ID 'loginButton' not found.");
-}
+        });
+    }
 
 function displayPet(petName, petType) {
-    const petDisplayArea = document.getElementById("petDisplayArea");
-    petDisplayArea.innerHTML = ''; // Clear previous content
-    
-    // Assuming you have a mapping of pet types to their image sources
-    const petTypeToImageSrcMap = {
-        cat: "media/Cat.png",
-        dog: "media/Dog.png",
-        squirrel: "media/Squirrel.png",
-        deer: "media/Deer.png",
-    };
+        const petDisplayArea = document.getElementById("petDisplayArea");
+        petDisplayArea.innerHTML = ''; // Clear previous content
 
-    // Create and configure the pet image element
-    const petImg = document.createElement("img");
-    petImg.src = petTypeToImageSrcMap[petType]; // Use the mapping to get the image source
-    petImg.classList.add("pet-image"); // Apply the "pet-image" class for styling
-    // Append the image to the display area
-    petDisplayArea.appendChild(petImg);
+        const petTypeToImageSrcMap = {
+            cat: "media/Cat.png",
+            dog: "media/Dog.png",
+            squirrel: "media/Squirrel.png",
+            deer: "media/Deer.png",
+        };
 
-    // Create and configure the pet name element
-    const petNameElement = document.createElement("p");
-    petNameElement.textContent = ` ${petName}`;
-    petNameElement.classList.add("pet-name"); // Apply the "pet-name" class for styling
-    // Append the name to the display area below the image
-    petDisplayArea.appendChild(petNameElement);
-}
+        const petImg = document.createElement("img");
+        petImg.src = petTypeToImageSrcMap[petType];
+        petImg.classList.add("pet-image");
+        petDisplayArea.appendChild(petImg);
+
+        const petNameElement = document.createElement("p");
+        petNameElement.textContent = petName;
+        petNameElement.classList.add("pet-name");
+        petDisplayArea.appendChild(petNameElement);
+        }
+    });
 });
 
 </script>

@@ -1,8 +1,11 @@
 import express from "express";
+import basicAuthMiddleware from '../modules/BasicAuthMiddleware.mjs'; // Adjust this path to where your BasicAuthMiddleware is located
 import { HTTPCodes } from "../modules/httpConstants.mjs";
 import DBManager from '../modules/storageManager.mjs'; // Adjust this path to where your DBManager is located
 
 const PET_API = express.Router();
+
+PET_API.use(basicAuthMiddleware);
 
 
 // Endpoint for registering a new pet
@@ -37,6 +40,5 @@ PET_API.post('/registerPet', async (req, res) => {
 });
 
 export default PET_API;
-
 
 

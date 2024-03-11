@@ -5,12 +5,14 @@ import petsRoute from './routes/petsRoute.mjs';
 import SuperLogger from './modules/superLogger.mjs';
 import pool from './modules/db.mjs';
 import PET_API from './routes/petsRoute.mjs'; 
+import { basicAuthMiddleware } from './modules/basicAuthMiddleware.mjs';
 
 
 
 
 const server = express();
 server.use(express.json());
+dotenv.config();
 
 
 // Function to test database connection
@@ -38,8 +40,12 @@ server.use(express.json());
 server.use(express.static('public'));
 
 // Telling the server to use the USER_API (all urls that uses this code will have to have the /user after the base address)
-server.use("/user", USER_API);
-server.use('/pets', PET_API);
+server.use("/user",basicAuthMiddleware, USER_API);
+server.use('/pets',basicAuthMiddleware, PET_API);
+
+server.get('/user/protected', basicAuthMiddleware, (req, res) => {
+    res.json({ message: 'You are authenticated', user: req.user });
+});
 
 
 // A get request handler example)

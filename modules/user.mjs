@@ -1,29 +1,39 @@
-import DBManager from './storageManager.mjs';
-
-
 class User {
-
-    constructor() {
-        ///TODO: Are these the correct fields for your project?
-        this.email;
-        this.pswHash;
-        this.name;
-        this.id;
+    constructor(email, pswHash, name, id) {
+        this.email = email;
+        this.pswHash = pswHash;
+        this.name = name;
+        this.id = id;
     }
 
     async save() {
-        if (this.id == null) {
-            return await DBManager.createUser(this);
-        }else{
-            return await DBManager.updateUser(this);
+        try {
+            if (this.id == null) {
+                return await DBManager.createUser({
+                    email: this.email,
+                    password: this.pswHash,
+                    name: this.name
+                });
+            } else {
+                return await DBManager.updateUser(this.id, {
+                    email: this.email,
+                    password: this.pswHash,
+                    name: this.name
+                });
+            }
+        } catch (error) {
+            console.error('Error saving user:', error);
+            throw error; // Re-throw to be handled elsewhere if needed
         }
-    
-}
+    }
 
-delete() {
-
-    DBManager.deleteUser(this);
-    
+    async delete() {
+        try {
+            await DBManager.deleteUser(this.id);
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            throw error;
+        }
     }
 }
 
