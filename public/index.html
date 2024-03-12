@@ -181,17 +181,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //Pet registration
 
-document.getElementById("registerPetButton").addEventListener("click", async () => {
+    document.getElementById("registerPetButton").addEventListener("click", async () => {
     const petName = document.getElementById("petname").value;
     const selectedPetType = localStorage.getItem('selectedPetType');
-    const userId = localStorage.getItem('userId'); // Ensure this is set during user registration
+    // Retrieve the stored token for authentication
+    const authToken = localStorage.getItem('authToken');
+
+    if (!authToken) {
+        console.error("No authentication token found. Please log in.");
+        alert("Please log in to register a pet.");
+        return; // Stop execution if there's no authToken
+    }
 
     try {
         const response = await fetch('http://localhost:8080/pets/registerPet', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${authToken}` // Include the auth token in the request
+            },
             body: JSON.stringify({
-                userId,
                 petType: selectedPetType,
                 petName,
             }),
@@ -203,43 +212,43 @@ document.getElementById("registerPetButton").addEventListener("click", async () 
 
         console.log("Pet registered successfully");
         alert("Pet registered successfully.");
-        // Proceed with your logic after successful registration
 
-        const taransDreamFarmImage = document.getElementById("startPageImage"); // Ensure you use the correct ID
-            if (taransDreamFarmImage) {
-                taransDreamFarmImage.style.display = "none";
-            }
+        // UI update after successful registration
+        const taransDreamFarmImage = document.getElementById("startPageImage");
+        if (taransDreamFarmImage) {
+            taransDreamFarmImage.style.display = "none";
+        }
 
         const petDisplayArea = document.getElementById("petDisplayArea");
-            petDisplayArea.innerHTML = '';
+        petDisplayArea.innerHTML = '';
 
+        const petImg = document.createElement("img");
+        const petTypeToImageSrcMap = {
+            cat: "media/Cat.png",
+            dog: "media/Dog.png",
+            squirrel: "media/Squirrel.png",
+            deer: "media/Deer.png",
+        };
+        petImg.src = petTypeToImageSrcMap[selectedPetType];
+        petImg.alt = selectedPetType;
+        petImg.classList.add("pet-image");
 
+        const petNameElement = document.createElement("p");
+        petNameElement.textContent = petName;
+        petNameElement.classList.add("pet-name");
 
-            const petImg = document.createElement("img");
-            const petTypeToImageSrcMap = {
-                cat: "media/Cat.png",
-                dog: "media/Dog.png",
-                squirrel: "media/Squirrel.png",
-                deer: "media/Deer.png",
-            };
-            petImg.src = petTypeToImageSrcMap[selectedPetType];
-            petImg.alt = selectedPetType;
-            petImg.classList.add("pet-image");
+        petDisplayArea.appendChild(petImg);
+        petDisplayArea.appendChild(petNameElement);
 
-            const petNameElement = document.createElement("p");
-            petNameElement.textContent = petName;
-            petNameElement.classList.add("pet-name");
+        // Hide the pet selection modal
+        document.getElementById("petSelectionModal").style.display = "none";
 
-            petDisplayArea.appendChild(petImg);
-            petDisplayArea.appendChild(petNameElement);
+    } catch (error) {
+        console.error("Error during pet registration:", error);
+        alert("Failed to register pet. Please try again.");
+    }
+});
 
-            // Hide the pet selection modal
-            document.getElementById("petSelectionModal").style.display = "none";
-        } catch (error) {
-            console.error("Error during pet registration:", error);
-            alert("Failed to register pet. Please try again.");
-        }
-    });
 
     // My Info Modal
     document.getElementById("submitUpdate").addEventListener("click", async () => {
@@ -310,8 +319,9 @@ const token = btoa(email + ":" + password); // Base64 encode email and password
 localStorage.setItem('authToken', token); // Store it for later use
 
 document.getElementById("loginModal").style.display = "none";
-
 document.getElementById("startPageImage").style.display = "none";
+
+fetchAndDisplayUserPets(); // Call this function here
 
             // Assuming pet data is correctly included in the response and you want to display the first pet
             const petData = userData.pet[0]; // Adjust based on actual response structure
@@ -357,11 +367,54 @@ async function fetchProtectedUserInfo() {
 }
 
 
+async function fetchAndDisplayUserPets() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        console.error("No authentication token found. Please log in.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:8080/pets/user-pets', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch user's pets: ${response.statusText}`);
+        }
+
+        const petsData = await response.json();
+        console.log("User's pets fetched successfully", petsData);
+
+        displayPets(petsData); // Use the revised function to display all fetched pets
+    } catch (error) {
+        console.error("Error fetching user's pets:", error);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Your existing DOMContentLoaded logic here
+    // Ensure fetchAndDisplayUserPets() is called after a successful login
+
+    const loginButton = document.getElementById("loginButton");
+    if (loginButton) {
+        loginButton.addEventListener("click", async () => {
+            // Your login logic here
+
+            // After successful login, call fetchAndDisplayUserPets
+            fetchAndDisplayUserPets();
+        });
+    }
+});
+
+
+// Revised display function to handle multiple pets
 function displayPet(petName, petType) {
     const petDisplayArea = document.getElementById("petDisplayArea");
-    petDisplayArea.innerHTML = ''; // Clear previous content
-    
-    // Assuming you have a mapping of pet types to their image sources
     const petTypeToImageSrcMap = {
         cat: "media/Cat.png",
         dog: "media/Dog.png",
@@ -369,21 +422,75 @@ function displayPet(petName, petType) {
         deer: "media/Deer.png",
     };
 
-    // Create and configure the pet image element
+    // Create and append the image element for the pet
     const petImg = document.createElement("img");
-    petImg.src = petTypeToImageSrcMap[petType]; // Use the mapping to get the image source
-    petImg.classList.add("pet-image"); // Apply the "pet-image" class for styling
-    // Append the image to the display area
+    petImg.src = petTypeToImageSrcMap[petType]; // Use the correct parameter here
+    petImg.alt = petType;
+    petImg.classList.add("pet-image");
     petDisplayArea.appendChild(petImg);
 
-    // Create and configure the pet name element
+    // Create and append the text element for the pet's name
     const petNameElement = document.createElement("p");
-    petNameElement.textContent = ` ${petName}`;
-    petNameElement.classList.add("pet-name"); // Apply the "pet-name" class for styling
-    // Append the name to the display area below the image
+    petNameElement.textContent = petName; // Use the correct parameter here
+    petNameElement.classList.add("pet-name");
     petDisplayArea.appendChild(petNameElement);
 }
+
+    function displayPets(petsData) {
+    const petDisplayArea = document.getElementById("petDisplayArea");
+    petDisplayArea.innerHTML = ''; // Clear previous content
+    petsData.forEach(pet => {
+        // Assuming your API sends 'pet_name' and 'pet_type', adjust if necessary
+        displayPet(pet.pet_name, pet.pet_type);
+    });
+}
+    
+
+// fetchAndDisplayUserPets remains mostly the same
+async function fetchAndDisplayUserPets() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        console.error("No authentication token found. Please log in.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:8080/pets/user-pets', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch user's pets: ${response.statusText}`);
+        }
+
+        const petsData = await response.json();
+        console.log("User's pets fetched successfully", petsData);
+
+        displayPets(petsData); // Use the revised function to display all fetched pets
+    } catch (error) {
+        console.error("Error fetching user's pets:", error);
+        }
+    }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Your existing DOMContentLoaded logic here
+    // Ensure fetchAndDisplayUserPets() is called after a successful login
+
+    const loginButton = document.getElementById("loginButton");
+    if (loginButton) {
+        loginButton.addEventListener("click", async () => {
+            // Your login logic here
+
+            // After successful login, call fetchAndDisplayUserPets
+            fetchAndDisplayUserPets();
+        });
+    }
 });
+
 
 </script>
      </body>
