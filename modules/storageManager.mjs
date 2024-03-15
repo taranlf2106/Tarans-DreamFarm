@@ -56,15 +56,22 @@ class DBManager {
 
   // Method to delete a user by ID
   async deleteUser(id) {
-    const queryText = 'DELETE FROM public.users WHERE id = $1 RETURNING id';
     try {
-      const { rows } = await this.#pool.query(queryText, [id]);
-      return rows[0];
+      // Delete associated pets first
+      const deletePetsQuery = 'DELETE FROM public.pets WHERE user_id = $1';
+      await this.#pool.query(deletePetsQuery, [id]);
+  
+      // Now delete the user
+      const deleteUserQuery = 'DELETE FROM public.users WHERE id = $1 RETURNING *'; // Return all columns
+      const { rows } = await this.#pool.query(deleteUserQuery, [id]);
+      
+      return rows[0]; // Return the entire row of the deleted user
     } catch (err) {
       console.error('Error deleting user:', err);
       throw err;
     }
   }
+  
 
   // Method to retrieve all users
   async getUsers() {

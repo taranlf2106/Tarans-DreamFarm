@@ -108,6 +108,24 @@ PET_API.put('/update/:id', authMiddleware, async (req, res) => {
     }
 });
 
+
+// Delete a pet
+PET_API.delete('/delete/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const deletedPet = await DBManager.deletePet(id);
+      if (deletedPet) {
+        res.status(HTTPCodes.SuccessfulResponse.Ok).send("Pet deleted successfully!");
+      } else {
+        res.status(HTTPCodes.ClientSideErrorResponse.NotFound).send("Pet not found");
+      }
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).send("Failed to delete pet");
+    }
+  });
+  
+  
 export default PET_API;
 
 

@@ -89,20 +89,23 @@ USER_API.put('/update/:id', async (req, res) => {
 
 
 // Delete a user
-USER_API.delete('/:id', async (req, res) => {
+USER_API.delete('delete/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const deletedUser = await DBManager.deleteUser(id); // Assuming deleteUser exists in DBManager
+
+    // Assuming deleteUser also deletes associated pets
     if (deletedUser) {
-      res.status(HTTPCodes.SuccesfullRespons.Ok).send("User deleted successfully!");
+      res.status(HTTPCodes.SuccessfulResponse.Ok).send("User and associated pet(s) deleted successfully!");
     } else {
-      res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send("User not found");
+      res.status(HTTPCodes.ClientSideErrorResponse.NotFound).send("User not found");
     }
   } catch (error) {
     console.error("Database error:", error);
-    res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to delete user");
+    res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).send("Failed to delete user and associated pet(s)");
   }
 });
+
 
 
 // Assuming you have session management set up with express-session or a similar package

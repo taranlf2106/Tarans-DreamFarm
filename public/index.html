@@ -684,18 +684,36 @@ if (saveChangesButton) {
             ]);
 
             alert("User and pet details updated successfully!");
-            const editUserModal = document.getElementById("editUserModal");
-            if (editUserModal) {
-                editUserModal.style.display = "none";
+            const editModal = document.getElementById("editModal");
+            if (editModal) {
+                editModal.style.display = "none";
             } else {
-                console.error("Edit user modal element not found.");
+                console.error("Edit modal element not found.");
             }
-            const editPetModal = document.getElementById("editPetModal");
-            if (editPetModal) {
-                editPetModal.style.display = "none";
+            
+            // Update displayed user name
+            const userNameElement = document.getElementById("userName"); // Assuming an element with id "userName" for displaying user name
+            if (userNameElement) {
+                userNameElement.textContent = updatedUserName;
             } else {
-                console.error("Edit pet modal element not found.");
+                console.error("User name element not found.");
             }
+            
+            // Update displayed pet name and pet type
+            const petNameElement = document.getElementById("petName"); // Assuming an element with id "petName" for displaying pet name
+            if (petNameElement) {
+                petNameElement.textContent = updatedPetName;
+            } else {
+                console.error("Pet name element not found.");
+            }
+
+            const petTypeElement = document.getElementById("petType"); // Assuming an element with id "petType" for displaying pet type
+            if (petTypeElement) {
+                petTypeElement.textContent = updatedPetType;
+            } else {
+                console.error("Pet type element not found.");
+            }
+
             // Optionally, refresh user and pet information displayed on the page
         } catch (error) {
             console.error("Error updating user or pet details:", error);
@@ -705,7 +723,6 @@ if (saveChangesButton) {
 } else {
     console.error("Save changes button element not found.");
 }
-
 });
 
 async function updateUserDetails(userId, name, email, password, authToken) {
@@ -750,6 +767,55 @@ async function updatePetDetails(petId, petName, petType, authToken) {
         throw error; // Rethrow to handle in calling function
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Add event listener for the delete user button
+    const deleteUserButton = document.getElementById("deleteUserButton");
+    if (deleteUserButton) {
+        deleteUserButton.addEventListener("click", async () => {
+            const userId = localStorage.getItem('userId');
+            const authToken = localStorage.getItem('authToken');
+
+            console.log("User ID:", userId);
+
+            if (!userId || !authToken) {
+                console.error("User ID or Auth Token not found");
+                return;
+            }
+
+            try {
+                // Send a request to delete the user and associated pet(s)
+                const response = await fetch(`http://localhost:8080/user/delete/${userId}`, {
+            
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Basic ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete user: ${response.statusText}`);
+                }
+
+                // Clear user-related data from localStorage
+                localStorage.removeItem('userId');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('petId'); // Remove petId if necessary
+
+                // Optionally, update the UI to reflect the deletion
+                alert("User and associated pet(s) deleted successfully!");
+                document.getElementById("myInfoModal").style.display = "none";
+                document.getElementById("petDisplayArea").innerHTML = ""; // Clear pet display area
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert("Failed to delete user and associated pet(s). Please try again.");
+            }
+        });
+    } else {
+        console.error("Delete user button element not found.");
+    }
+});
+
 
 
 
