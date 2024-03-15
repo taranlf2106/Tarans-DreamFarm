@@ -56,19 +56,43 @@
 
     <button id="myInfoButton" class="my-info-button">My Info</button>
     
-    <!-- My Info Modal -->
-    <div id="myInfoModal" class="modal"> <!-- Changed ID from loginModal to myInfoModal -->
+   
+    <div id="myInfoModal" class="modal">
         <div class="modal-content">
             <span class="closeMyInfo">&times;</span>
             <h2>My Info</h2>
-            <p id="userInfoName">Name: </p>
-            <p id="userInfoEmail">Email: </p>
-            <p id="userPetName">Pet Name: </p>
-            <!-- Your inputs and button for updating info -->
-            <input type="text" id="updateName" placeholder="New Name">
-            <input type="email" id="updateEmail" placeholder="New Email">
-            <input type="password" id="updatePassword" placeholder="New Password">
-            <button id="submitUpdate">Update Info</button>
+            <div class="modal-flex-container">
+                <div id="modalLeft">
+                    <div id="userPetInfo">
+                        <div id="userPetImage"></div>
+                        <p id="userPetName">Pet Name: </p>
+                    </div>
+                </div>
+                <div id="modalRight">
+                    <p id="userInfoName">Name: </p>
+                    <p id="userInfoEmail">Email: </p>
+                </div>
+            </div>
+            <button id="editUserInfoButton">Edit User or Pet</button>
+            <button id="deleteUserButton">Delete User</button>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="closeEdit">&times;</span>
+            <h2>Edit User and Pet</h2>
+            User Name: <input type="text" id="editUserName"><br>
+            Email: <input type="text" id="editUserEmail"><br>
+            Password: <input type="password" id="editUserPassword"><br>
+            Pet Name: <input type="text" id="editPetName"><br>
+            Pet Type: <select id="editPetType">
+                <option value="cat">Cat</option>
+                <option value="dog">Dog</option>
+                <option value="squirrel">Squirrel</option>
+                <option value="deer">Deer</option>
+            </select><br>
+            <button id="saveChangesButton">Save Changes</button>
         </div>
     </div>
 
@@ -133,40 +157,56 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("createUserButton").addEventListener("click", async (event) => {
     event.preventDefault();
 
-        const name = document.getElementById("registerName").value;
-        const email = document.getElementById("registerEmail").value;
-        const password = document.getElementById("registerPassword").value;
+    const name = document.getElementById("registerName").value;
+    const email = document.getElementById("registerEmail").value;
+    const password = document.getElementById("registerPassword").value;
 
-        console.log("Attempting to register user", { name, email, password });
+    console.log("Attempting to register user", { name, email, password });
 
-        try {
-            const response = await fetch('http://localhost:8080/user/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email, password })
-            });
+    try {
+        const response = await fetch('http://localhost:8080/user/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, password })
+        });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const userData = await response.json();
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const userData = await response.json(); // Use response here, not registerResponse
         console.log("User registered successfully", userData);
-        alert("User registered successfully. Now choose your pet.");
+        localStorage.setItem('userId', userData.id); // Adjust according to your backend response structure
 
-        // Store user ID for pet registration
-        localStorage.setItem('userId', userData.id);
+        // After registration, perform login to get authToken
+        const loginResponse = await fetch('http://localhost:8080/user/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
-        // Hide user registration modal and show pet selection modal
+        if (!loginResponse.ok) {
+            throw new Error(`HTTP error during login! status: ${loginResponse.status}`);
+        }
+
+        const loginData = await loginResponse.json();
+        console.log("Login successful", loginData);
+
+        // Store the authentication token
+        const authToken = btoa(email + ":" + password);
+        localStorage.setItem('authToken', authToken);
+
+        alert("User registered and logged in successfully. Now choose your pet.");
         document.getElementById("registerModal").style.display = "none";
         document.getElementById("petSelectionModal").style.display = "block";
     } catch (error) {
-        console.error("Error during user registration:", error);
-        alert("An error occurred during registration. Please try again.");
+        console.error("Error during user registration or login:", error);
+        alert("An error occurred. Please try again.");
     }
-    });
+});
+
 
     //Pet selection inside the modal
         petOptions.forEach(option => {
@@ -250,37 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-    // My Info Modal
-    document.getElementById("submitUpdate").addEventListener("click", async () => {
-    const userId = localStorage.getItem('userId'); // Ensure this is correctly stored during login
-    const name = document.getElementById("updateName").value;
-    const email = document.getElementById("updateEmail").value;
-    const password = document.getElementById("updatePassword").value;
-
-    try {
-        const response = await fetch(`http://localhost:8080/user/${userId}`, { // Make sure the URL matches your API
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password }),
-        });
-
-        if (response.ok) {
-            const updatedUserData = await response.json(); // Assuming your API returns the updated user data
-            console.log("User info updated successfully", updatedUserData);
-            alert("User info updated successfully.");
-            // Call displayPetAndUserInfo or other UI update functions here with the updatedUserData
-            // displayPetAndUserInfo(updatedUserData);
-        } else {
-            console.error("Failed to update user info");
-            alert("Failed to update user info.");
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert("An error occurred. Please try again.");
-    }
-});
 
 // Define displayPetAndUserInfo function outside the event listener
 function displayPetAndUserInfo(userData) {
@@ -314,6 +323,8 @@ if (loginButton) {
 
 const userData = await response.json();
 console.log("Login successful", userData);
+
+localStorage.setItem('userId', userData.user.id); 
 
 const token = btoa(email + ":" + password); // Base64 encode email and password
 localStorage.setItem('authToken', token); // Store it for later use
@@ -350,7 +361,7 @@ async function fetchProtectedUserInfo() {
     try {
         const response = await fetch('http://localhost:8080/user/protected-user-info', {
             headers: {
-                'Authorization': `Basic ${authToken}`, // Include the token in the Authorization header
+                'Authorization': 'Bearer ' + authToken, // Include the token in the Authorization header
             },
         });
 
@@ -367,35 +378,6 @@ async function fetchProtectedUserInfo() {
 }
 
 
-async function fetchAndDisplayUserPets() {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-        console.error("No authentication token found. Please log in.");
-        return;
-    }
-
-    try {
-        const response = await fetch('http://localhost:8080/pets/user-pets', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${authToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch user's pets: ${response.statusText}`);
-        }
-
-        const petsData = await response.json();
-        console.log("User's pets fetched successfully", petsData);
-
-        displayPets(petsData); // Use the revised function to display all fetched pets
-    } catch (error) {
-        console.error("Error fetching user's pets:", error);
-        }
-    }
-});
-
 document.addEventListener('DOMContentLoaded', () => {
     // Your existing DOMContentLoaded logic here
     // Ensure fetchAndDisplayUserPets() is called after a successful login
@@ -410,6 +392,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+
+async function fetchAndDisplayUserPets() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        console.error("No authentication token found. Please log in.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:8080/pets/user-pets/', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Basic ${authToken}`,
+        },
+    });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch user's pets: ${response.statusText}`);
+        }
+
+        const petsData = await response.json();
+        console.log("User's pets fetched successfully", petsData);
+
+        displayPets(petsData); // Use the revised function to display all fetched pets
+    } catch (error) {
+        console.error("Error fetching user's pets:", error);
+        }
+    }
+
+    function displayPets(petsData) {
+    const petDisplayArea = document.getElementById("petDisplayArea");
+    petDisplayArea.innerHTML = ''; // Clear previous content
+    petsData.forEach(pet => {
+        // Assuming your API sends 'pet_name' and 'pet_type', adjust if necessary
+        displayPet(pet.pet_name, pet.pet_type);
+    });
+}
 
 
 // Revised display function to handle multiple pets
@@ -444,10 +465,10 @@ function displayPet(petName, petType) {
         displayPet(pet.pet_name, pet.pet_type);
     });
 }
-    
+});   
 
 // fetchAndDisplayUserPets remains mostly the same
-async function fetchAndDisplayUserPets() {
+/* async function fetchAndDisplayUserPets() {
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         console.error("No authentication token found. Please log in.");
@@ -455,10 +476,10 @@ async function fetchAndDisplayUserPets() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/pets/user-pets', {
+        const response = await fetch('http://localhost:8080/pets/user-pets/', {
             method: 'GET',
             headers: {
-                'Authorization': `Basic ${authToken}`,
+                'Authorization': `Basic ${authToken}`, // Change 'Basic' to 'Bearer'
             },
         });
 
@@ -472,9 +493,10 @@ async function fetchAndDisplayUserPets() {
         displayPets(petsData); // Use the revised function to display all fetched pets
     } catch (error) {
         console.error("Error fetching user's pets:", error);
-        }
     }
+}
 
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     // Your existing DOMContentLoaded logic here
@@ -489,7 +511,247 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchAndDisplayUserPets();
         });
     }
+}); */
+
+
+async function updatePetDetailsAndFetchImage(petId, petName, petType, authToken) {
+    try {
+        const updateResponse = await updatePetDetails(petId, petName, petType, authToken);
+        
+        // Assuming the update response includes the pet ID or any identifier to fetch its details
+        const updatedPetId = updateResponse.id; // Adjust according to your actual response structure
+        
+        // Fetch updated pet details, including the new pet type image
+        const petDetailsResponse = await fetch(`http://localhost:8080/pets/${updatedPetId}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Basic ${authToken}` },
+        });
+
+        if (!petDetailsResponse.ok) throw new Error('Failed to fetch updated pet details.');
+
+        const petDetails = await petDetailsResponse.json();
+
+        // Assuming petDetails includes a property 'image' with the URL to the pet's image
+        const newPetImageURL = petDetails.image; // Adjust according to your actual response structure
+        
+        // Display the updated pet image on the page
+        displayUpdatedPetImage(newPetImageURL);
+    } catch (error) {
+        console.error("Error updating pet details or fetching new pet image:", error);
+    }
+}
+
+async function displayUpdatedPetImage(petImageURL) {
+    // Assuming you have an <img> element with an id="petImage" to display the pet's image
+    const petImageElement = document.getElementById('petImage');
+    if (petImageElement) {
+        petImageElement.src = petImageURL;
+    }
+}
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // When the My Info button is clicked, open the modal and populate it
+    document.getElementById("myInfoButton").addEventListener("click", () => {
+        document.getElementById("myInfoModal").style.display = "block";
+        populateUserInfo();
+    });
+
+    // Close the My Info modal
+    document.querySelector('.closeMyInfo').addEventListener('click', () => {
+        document.getElementById("myInfoModal").style.display = "none";
+    });
+
+    async function populateUserInfo() {
+        const userId = localStorage.getItem('userId');
+        const authToken = localStorage.getItem('authToken');
+
+        // Mapping from pet type to image URL
+        const petTypeToImageUrlMap = {
+            cat: "media/Cat.png",
+            dog: "media/Dog.png",
+            squirrel: "media/Squirrel.png",
+            deer: "media/Deer.png",
+            // Add more mappings as necessary
+        };
+
+        if (!userId || !authToken) {
+            console.error("User ID or Auth Token not found");
+            document.getElementById('userInfoName').textContent = 'User not logged in';
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/user/details/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${authToken}`,
+                },
+            });
+
+            if (!response.ok) throw new Error(`Failed to fetch user info: ${response.statusText}`);
+
+            const data = await response.json();
+
+            document.getElementById('userInfoName').textContent = `Name: ${data.user.name}`;
+            document.getElementById('userInfoEmail').textContent = `Email: ${data.user.email}`;
+
+            const petImageContainer = document.getElementById('userPetImage');
+            petImageContainer.innerHTML = ''; // Clear previous content
+            
+            if (data.pets && data.pets.length > 0) {
+                const pet = data.pets[0]; // Display the first pet for simplicity
+                document.getElementById('userPetName').textContent = `Pet Name: ${pet.pet_name}`;
+                
+                // Only display the pet image to represent the pet type
+                const imageUrl = petTypeToImageUrlMap[pet.pet_type];
+                if (imageUrl) {
+                 const petImageElement = document.createElement('img');
+                 petImageElement.src = imageUrl;
+                 petImageElement.alt = `Image of ${pet.pet_type}`;
+                 petImageElement.classList.add("my-info-pet-image"); // Use the class for styling
+                 petImageContainer.appendChild(petImageElement);
+}
+            } else {
+                // Optionally, clear or hide the pet image container
+                petImageContainer.innerHTML = 'Pet info not available'; // Or set display to 'none'
+            }
+        } catch (error) {
+            console.error('Error fetching user and pet info:', error);
+            document.getElementById('userInfoName').textContent = 'Error fetching information';
+        }
+    }
 });
+
+
+
+
+
+
+
+
+
+
+
+// Ensure the DOM content is loaded before accessing elements
+document.addEventListener("DOMContentLoaded", function () {
+
+// Add event listener for the edit user info button
+const editUserInfoButton = document.getElementById("editUserInfoButton");
+if (editUserInfoButton) {
+    editUserInfoButton.addEventListener("click", () => {
+        // Open the edit modal
+        const editModal = document.getElementById("editModal");
+        if (editModal) {
+            editModal.style.display = "block";
+        } else {
+            console.error("Edit modal element not found.");
+        }
+
+        // Assuming you're storing the current user's ID in localStorage when they log in
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            console.error("No user ID found. Please log in.");
+            return;
+        }
+
+        // Populate the modal with existing user data if necessary
+        // This could involve fetching user data from the server or retrieving it from local storage
+    });
+} else {
+    console.error("Edit user info button element not found.");
+}
+
+// Add event listener for the save changes button
+const saveChangesButton = document.getElementById("saveChangesButton");
+if (saveChangesButton) {
+    saveChangesButton.addEventListener("click", async () => {
+        const userId = localStorage.getItem('userId');
+        const authToken = localStorage.getItem('authToken');
+        const updatedUserName = document.getElementById("editUserName").value;
+        const updatedEmail = document.getElementById("editUserEmail").value;
+        const updatedPassword = document.getElementById("editUserPassword").value; // Handle with care
+        const updatedPetName = document.getElementById("editPetName").value;
+        const updatedPetType = document.getElementById("editPetType").value;
+        const petId = localStorage.getItem('petId'); // Ensure petId is stored when pet is registered/selected
+
+        try {
+            await Promise.all([
+                updateUserDetails(userId, updatedUserName, updatedEmail, updatedPassword, authToken),
+                updatePetDetails(petId, updatedPetName, updatedPetType, authToken)
+            ]);
+
+            alert("User and pet details updated successfully!");
+            const editUserModal = document.getElementById("editUserModal");
+            if (editUserModal) {
+                editUserModal.style.display = "none";
+            } else {
+                console.error("Edit user modal element not found.");
+            }
+            const editPetModal = document.getElementById("editPetModal");
+            if (editPetModal) {
+                editPetModal.style.display = "none";
+            } else {
+                console.error("Edit pet modal element not found.");
+            }
+            // Optionally, refresh user and pet information displayed on the page
+        } catch (error) {
+            console.error("Error updating user or pet details:", error);
+            alert("Failed to update user or pet details. Please try again.");
+        }
+    });
+} else {
+    console.error("Save changes button element not found.");
+}
+
+});
+
+async function updateUserDetails(userId, name, email, password, authToken) {
+try {
+    const response = await fetch(`http://localhost:8080/user/update/${userId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${authToken}` // authToken should be the Base64 encoded string of username:password
+        },
+        body: JSON.stringify({ name, email, password })
+    });
+    if (!response.ok) throw new Error('Failed to update user details');
+    return response.json();
+} catch (error) {
+    console.error("Error updating user:", error);
+    throw error; // Rethrow to catch in calling function
+}
+}
+
+async function updatePetDetails(petId, petName, petType, authToken) {
+    try {
+        const response = await fetch(`http://localhost:8080/pets/update/${petId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${authToken}`
+            },
+            body: JSON.stringify({ petName, petType })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update pet details: ${response.statusText}`);
+        }
+
+        const updatedPetDetails = await response.json();
+        console.log("Pet details updated successfully", updatedPetDetails);
+
+        return updatedPetDetails;
+    } catch (error) {
+        console.error("Error updating pet details:", error);
+        throw error; // Rethrow to handle in calling function
+    }
+}
+
+
 
 
 </script>

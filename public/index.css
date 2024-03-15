@@ -191,5 +191,96 @@ gap: 10px;
   height: auto;
   display: block;
   margin: 40px auto; /* Increase top margin to move it down and center the image */
-  margin-top: 50px; /* Adjust top margin to move the image down further if needed */
+  margin-top: 200px; /* Adjust top margin to move the image down further if needed */
 }
+
+/* Assuming 'userInfo' and 'petInfo' are class names assigned to your text elements */
+.userInfo, .petInfo {
+  font-size: 20px; /* Increase the font size */
+  font-weight: bold; /* Optionally make the text bold */
+}
+
+/* If using IDs or specific tags, you can directly target them */
+#userPetName, #userPetType {
+  font-size: 20px; /* Increase the font size */
+  font-weight: bold; /* Optionally make the text bold */
+}
+
+.my-info-pet-image {
+  width: 300px; /* Adjust according to your preference */
+  height: auto; /* Keep the aspect ratio of the image */
+}
+
+/* Adjust the display property for .modal-flex-container correctly */
+.modal-flex-container {
+  display: flex;
+  height: 400px;
+  justify-content: space-between;
+  align-items: start; /* Align items at the start of the container */
+}
+
+#modalLeft {
+  flex: 1; /* Each takes up equal amount of space */
+  /* Optional: Add padding or margin for spacing and readability */
+  padding: 10px;
+}
+
+#modalRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* This will center the userInfoContainer horizontally */
+  padding: 10px;
+}
+
+#userPetInfo {
+  display: flex;
+  flex-direction: column; /* Stack pet image and name vertically */
+  align-items: center; /* Center-align the items */
+  gap: 10px; /* Space between pet image and name */
+}
+
+#userInfoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center-align the items inside userInfoContainer */
+  width: 100%; /* This ensures it fills the parent's width */
+  padding-top: 50px; /* Adjust this value as needed to move the text lower */
+}
+
+#userInfoName {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin-top: 100px;
+}
+
+#userInfoEmail {
+  font-size: 20px;
+  font-weight: bold;
+  /* No need for a large margin-top here, adjust if needed */
+}
+
+.input-group {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+  gap: 10px; /* Space between the edit button and the input field */
+}
+
+.editButton {
+  /* Style your edit buttons here, e.g., color, padding, etc. */
+  cursor: pointer;
+  padding: 5px 10px; /* Example padding */
+  background-color: #ff69b4; /* Example background color */
+  border: 1px solid white; /* Example border */
+  border-radius: 5px; /* Rounded corners for the button */
+}
+
+input[type="text"], input[type="password"], select {
+  flex-grow: 1; /* Input fields take up the remaining space */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+

@@ -127,6 +127,18 @@ async getPetByUserId(userId) {
   }
 }
 
+async updatePet(id, { petName, petType }) {
+  const queryText = 'UPDATE pets SET pet_name = $1, pet_type = $2 WHERE id = $3 RETURNING *';
+  const values = [petName, petType, id];
+  try {
+    const { rows } = await this.#pool.query(queryText, values);
+    return rows.length > 0 ? rows[0] : null; // Returns the updated pet object
+  } catch (err) {
+    console.error('Error updating pet:', err);
+    throw err;
+  }
+}
+
 }
 
 export default new DBManager();

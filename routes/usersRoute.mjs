@@ -41,38 +41,52 @@ USER_API.post('/register', async (req, res) => {
 
 
  // Fetch a user's information
-USER_API.get('/:id', async (req, res) => {
+ USER_API.get('/details/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await DBManager.getUserById(id); // Assuming getUserById exists in DBManager
+    const user = await DBManager.getUserById(id);
+    const pets = await DBManager.getPetByUserId(id);
     if (user) {
-      res.status(200).json(user);
+      res.status(200).json({ user, pets });
     } else {
       res.status(404).send("User not found");
     }
   } catch (error) {
-    console.error("Database error:", error);
-    res.status(500).send("Failed to fetch user");
+    console.error("Error fetching user and pets:", error);
+    res.status(500).send("Failed to retrieve user details");
   }
 });
 
 
-// Update a user
-USER_API.put('/:id', async (req, res) => {
+
+// Update a user by ID
+// Update a user by ID
+// Update a user by ID
+USER_API.put('/update/:id', async (req, res) => {
   const { id } = req.params;
   const { name, email, password } = req.body;
   try {
-    const updatedUser = await DBManager.updateUser(id, { name, email, password }); // Adjust according to actual method parameters
-    if (updatedUser) {
-      res.status(HTTPCodes.SuccesfullRespons.Ok).json(updatedUser);
-    } else {
-      res.status(HTTPCodes.ClientSideErrorRespons.NotFound).send("User not found");
-    }
+      let updatedUser;
+      if (password) {
+          // If password is provided, update all details including the password
+          updatedUser = await DBManager.updateUser(id, { name, email, password });
+      } else {
+          // If password is not provided, update only name and email
+          updatedUser = await DBManager.updateUser(id, { name, email });
+      }
+      if (updatedUser) {
+          res.status(200).json(updatedUser); // Send updated user object in response
+      } else {
+          res.status(404).send("User not found");
+      }
   } catch (error) {
-    console.error("Database error:", error);
-    res.status(HTTPCodes.ServerSideErrorRespons.InternalServerError).send("Failed to update user");
+      console.error("Database error:", error);
+      res.status(500).send("Failed to update user");
   }
 });
+
+
+
 
 // Delete a user
 USER_API.delete('/:id', async (req, res) => {
