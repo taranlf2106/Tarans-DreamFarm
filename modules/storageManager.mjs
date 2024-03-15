@@ -1,6 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
+import bcrypt, { compare } from 'bcrypt';
 
 dotenv.config();
 
@@ -42,6 +42,7 @@ class DBManager {
 
   // Method to update a user by ID
   async updateUser(id, { name, email, password }) {
+    console.log('Updating user with ID:', id);
     const hashedPassword = await bcrypt.hash(password, 12); // Hash the password
     const queryText = 'UPDATE public.users SET name = $1, email = $2, password = $3 WHERE id = $4 RETURNING id, name, email';
     const values = [name, email, hashedPassword, id]; // Use the hashed password here
