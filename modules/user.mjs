@@ -23,7 +23,7 @@ class User {
             }
         } catch (error) {
             console.error('Error saving user:', error);
-            throw error; // Re-throw to be handled elsewhere if needed
+            throw error; 
         }
     }
 

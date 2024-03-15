@@ -72,10 +72,7 @@ USER_API.put('/update/:id', async (req, res) => {
          
           updatedUser = await DBManager.updateUser(id, { name, email });
       }
-
-
       if (updatedUser) {
-        console.log(updatedUser)
           res.status(200).json(updatedUser); 
       } else {
           res.status(404).send("User not found");

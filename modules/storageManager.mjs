@@ -27,12 +27,12 @@ class DBManager {
   }
 
   async createUser({ name, email, password }) {
-    const hashedPassword = await bcrypt.hash(password, 12); // Hashing the password
+    const hashedPassword = await bcrypt.hash(password, 12); 
     const queryText = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *';
-    const values = [name, email, hashedPassword]; // Use the hashed password here
+    const values = [name, email, hashedPassword]; 
     try {
         const { rows } = await this.#pool.query(queryText, values);
-        return rows[0]; // Returns the user object without including the hashed password
+        return rows[0]; 
     } catch (err) {
         console.error('Error creating user:', err);
         throw err;
@@ -40,12 +40,12 @@ class DBManager {
 }
 
 
-  // Method to update a user by ID
+  
   async updateUser(id, { name, email, password }) {
     console.log('Updating user with ID:', id);
-    const hashedPassword = await bcrypt.hash(password, 12); // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 12); 
     const queryText = 'UPDATE public.users SET name = $1, email = $2, password = $3 WHERE id = $4 RETURNING id, name, email';
-    const values = [name, email, hashedPassword, id]; // Use the hashed password here
+    const values = [name, email, hashedPassword, id]; 
     try {
       const { rows } = await this.#pool.query(queryText, values);
       return rows[0];
@@ -55,18 +55,18 @@ class DBManager {
     }
 }
 
-  // Method to delete a user by ID
+
   async deleteUser(id) {
     try {
-      // Delete associated pets first
+     
       const deletePetsQuery = 'DELETE FROM public.pets WHERE user_id = $1';
       await this.#pool.query(deletePetsQuery, [id]);
   
-      // Now delete the user
-      const deleteUserQuery = 'DELETE FROM public.users WHERE id = $1 RETURNING *'; // Return all columns
+     
+      const deleteUserQuery = 'DELETE FROM public.users WHERE id = $1 RETURNING *'; 
       const { rows } = await this.#pool.query(deleteUserQuery, [id]);
       
-      return rows[0]; // Return the entire row of the deleted user
+      return rows[0]; 
     } catch (err) {
       console.error('Error deleting user:', err);
       throw err;
@@ -74,7 +74,7 @@ class DBManager {
   }
   
 
-  // Method to retrieve all users
+  
   async getUsers() {
     const queryText = 'SELECT id, name, email FROM public.users';
     try {
@@ -119,7 +119,7 @@ async findUserByEmail(email) {
         return rows[0];
     } catch (err) {
         console.error('Error creating pet:', err);
-        throw err; // Ensure this error is propagated back to the caller
+        throw err; 
     }
 }
 
@@ -128,7 +128,7 @@ async getPetByUserId(userId) {
   const values = [userId];
   try {
       const { rows } = await this.#pool.query(queryText, values);
-      return rows; // This returns an array of pets associated with the userId
+      return rows; 
   } catch (err) {
       console.error('Error retrieving pets by user ID:', err);
       throw err;
@@ -140,7 +140,7 @@ async updatePet(id, { petName, petType }) {
   const values = [petName, petType, id];
   try {
     const { rows } = await this.#pool.query(queryText, values);
-    return rows.length > 0 ? rows[0] : null; // Returns the updated pet object
+    return rows.length > 0 ? rows[0] : null; 
   } catch (err) {
     console.error('Error updating pet:', err);
     throw err;

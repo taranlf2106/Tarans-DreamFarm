@@ -1,6 +1,4 @@
 
-// The point of this class is increasing readability and maintainability of the rest of the code. 
-// It should be extended and refactord as needed.
 
 class HTTPCodes {
 

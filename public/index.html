@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Add event listener to the close button of My Info Modal if it exists
+ 
     if (spanCloseMyInfo) {
         spanCloseMyInfo.addEventListener("click", () => {
             myInfoModal.style.display = "none";
@@ -176,11 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const userData = await response.json(); // Use response here, not registerResponse
+        const userData = await response.json(); 
         console.log("User registered successfully", userData);
-        localStorage.setItem('userId', userData.id); // Adjust according to your backend response structure
+        localStorage.setItem('userId', userData.id); 
 
-        // After registration, perform login to get authToken
+        
         const loginResponse = await fetch('/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginData = await loginResponse.json();
         console.log("Login successful", loginData);
 
-        // Store the authentication token
+       
         const authToken = btoa(email + ":" + password);
         localStorage.setItem('authToken', authToken);
 
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!authToken) {
         console.error("No authentication token found. Please log in.");
         alert("Please log in to register a pet.");
-        return; // Stop execution if there's no authToken
+        return; 
     }
 
     try {
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Basic ${authToken}` // Include the auth token in the request
+                'Authorization': `Basic ${authToken}` 
             },
             body: JSON.stringify({
                 petType: selectedPetType,
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Pet registered successfully");
         alert("Pet registered successfully.");
 
-        // UI update after successful registration
+        
         const taransDreamFarmImage = document.getElementById("startPageImage");
         if (taransDreamFarmImage) {
             taransDreamFarmImage.style.display = "none";
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         petDisplayArea.appendChild(petImg);
         petDisplayArea.appendChild(petNameElement);
 
-        // Hide the pet selection modal
+        
         document.getElementById("petSelectionModal").style.display = "none";
 
     } catch (error) {
@@ -291,14 +291,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Define displayPetAndUserInfo function outside the event listener
+
 function displayPetAndUserInfo(userData) {
     // Update the UI with userData
-    const userInfoArea = document.getElementById("userInfo"); // Make sure this element exists
+    const userInfoArea = document.getElementById("userInfo"); 
     if (userInfoArea) {
-        userInfoArea.textContent = `Welcome, ${userData.name}!`; // Customize as needed
+        userInfoArea.textContent = `Welcome, ${userData.name}!`; 
     }
-    // Update pet info similarly
+    
 }
 
 
@@ -326,18 +326,18 @@ console.log("Login successful", userData);
 
 localStorage.setItem('userId', userData.user.id); 
 
-const token = btoa(email + ":" + password); // Base64 encode email and password
-localStorage.setItem('authToken', token); // Store it for later use
+const token = btoa(email + ":" + password); 
+localStorage.setItem('authToken', token); 
 
 document.getElementById("loginModal").style.display = "none";
 document.getElementById("startPageImage").style.display = "none";
 
-fetchAndDisplayUserPets(); // Call this function here
+fetchAndDisplayUserPets(); 
 
-            // Assuming pet data is correctly included in the response and you want to display the first pet
-            const petData = userData.pet[0]; // Adjust based on actual response structure
+            
+            const petData = userData.pet[0]; 
             if (petData) {
-                displayPet(petData.pet_name, petData.pet_type); // Assuming your pet object includes 'pet_name' and 'pet_type'
+                displayPet(petData.pet_name, petData.pet_type); 
             } else {
                 console.log("No pet data available for this user.");
             }
@@ -350,9 +350,9 @@ fetchAndDisplayUserPets(); // Call this function here
     console.error("Element with ID 'loginButton' not found.");
 }
 
-// Fetch protected user info
+
 async function fetchProtectedUserInfo() {
-    const authToken = localStorage.getItem('authToken'); // Retrieve the stored token
+    const authToken = localStorage.getItem('authToken'); 
     if (!authToken) {
         console.error("No authentication token found. Please log in.");
         return;
@@ -361,7 +361,7 @@ async function fetchProtectedUserInfo() {
     try {
         const response = await fetch('/user/protected-user-info', {
             headers: {
-                'Authorization': 'Bearer ' + authToken, // Include the token in the Authorization header
+                'Authorization': 'Bearer ' + authToken, 
             },
         });
 
@@ -379,15 +379,12 @@ async function fetchProtectedUserInfo() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Your existing DOMContentLoaded logic here
-    // Ensure fetchAndDisplayUserPets() is called after a successful login
+
 
     const loginButton = document.getElementById("loginButton");
     if (loginButton) {
         loginButton.addEventListener("click", async () => {
-            // Your login logic here
-
-            // After successful login, call fetchAndDisplayUserPets
+         
             fetchAndDisplayUserPets();
         });
     }
@@ -417,7 +414,7 @@ async function fetchAndDisplayUserPets() {
         const petsData = await response.json();
         console.log("User's pets fetched successfully", petsData);
 
-        displayPets(petsData); // Use the revised function to display all fetched pets
+        displayPets(petsData); 
     } catch (error) {
         console.error("Error fetching user's pets:", error);
         }
@@ -425,15 +422,15 @@ async function fetchAndDisplayUserPets() {
 
     function displayPets(petsData) {
     const petDisplayArea = document.getElementById("petDisplayArea");
-    petDisplayArea.innerHTML = ''; // Clear previous content
+    petDisplayArea.innerHTML = ''; 
     petsData.forEach(pet => {
-        // Assuming your API sends 'pet_name' and 'pet_type', adjust if necessary
+        
         displayPet(pet.pet_name, pet.pet_type);
     });
 }
 
 
-// Revised display function to handle multiple pets
+
 function displayPet(petName, petType) {
     const petDisplayArea = document.getElementById("petDisplayArea");
     const petTypeToImageSrcMap = {
@@ -443,85 +440,40 @@ function displayPet(petName, petType) {
         deer: "media/Deer.png",
     };
 
-    // Create and append the image element for the pet
+  
     const petImg = document.createElement("img");
-    petImg.src = petTypeToImageSrcMap[petType]; // Use the correct parameter here
-    petImg.alt = petType;
+    petImg.src = petTypeToImageSrcMap[petType]; 
     petImg.classList.add("pet-image");
     petDisplayArea.appendChild(petImg);
 
-    // Create and append the text element for the pet's name
+   
     const petNameElement = document.createElement("p");
-    petNameElement.textContent = petName; // Use the correct parameter here
+    petNameElement.textContent = petName; 
     petNameElement.classList.add("pet-name");
     petDisplayArea.appendChild(petNameElement);
 }
 
     function displayPets(petsData) {
     const petDisplayArea = document.getElementById("petDisplayArea");
-    petDisplayArea.innerHTML = ''; // Clear previous content
+    petDisplayArea.innerHTML = ''; 
     petsData.forEach(pet => {
-        // Assuming your API sends 'pet_name' and 'pet_type', adjust if necessary
+       
         displayPet(pet.pet_name, pet.pet_type);
     });
 }
 });   
 
-// fetchAndDisplayUserPets remains mostly the same
-/* async function fetchAndDisplayUserPets() {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-        console.error("No authentication token found. Please log in.");
-        return;
-    }
 
-    try {
-        const response = await fetch('http://localhost:8080/pets/user-pets/', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${authToken}`, // Change 'Basic' to 'Bearer'
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch user's pets: ${response.statusText}`);
-        }
-
-        const petsData = await response.json();
-        console.log("User's pets fetched successfully", petsData);
-
-        displayPets(petsData); // Use the revised function to display all fetched pets
-    } catch (error) {
-        console.error("Error fetching user's pets:", error);
-    }
-}
-
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Your existing DOMContentLoaded logic here
-    // Ensure fetchAndDisplayUserPets() is called after a successful login
-
-    const loginButton = document.getElementById("loginButton");
-    if (loginButton) {
-        loginButton.addEventListener("click", async () => {
-            // Your login logic here
-
-            // After successful login, call fetchAndDisplayUserPets
-            fetchAndDisplayUserPets();
-        });
-    }
-}); */
 
 
 async function updatePetDetailsAndFetchImage(petId, petName, petType, authToken) {
     try {
         const updateResponse = await updatePetDetails(petId, petName, petType, authToken);
         
-        // Assuming the update response includes the pet ID or any identifier to fetch its details
-        const updatedPetId = updateResponse.id; // Adjust according to your actual response structure
         
-        // Fetch updated pet details, including the new pet type image
+        const updatedPetId = updateResponse.id; 
+        
+        
         const petDetailsResponse = await fetch(`/pets/${updatedPetId}`, {
             method: 'GET',
             headers: { 'Authorization': `Basic ${authToken}` },
@@ -531,10 +483,10 @@ async function updatePetDetailsAndFetchImage(petId, petName, petType, authToken)
 
         const petDetails = await petDetailsResponse.json();
 
-        // Assuming petDetails includes a property 'image' with the URL to the pet's image
-        const newPetImageURL = petDetails.image; // Adjust according to your actual response structure
+      
+        const newPetImageURL = petDetails.image; 
         
-        // Display the updated pet image on the page
+        
         displayUpdatedPetImage(newPetImageURL);
     } catch (error) {
         console.error("Error updating pet details or fetching new pet image:", error);
@@ -542,7 +494,7 @@ async function updatePetDetailsAndFetchImage(petId, petName, petType, authToken)
 }
 
 async function displayUpdatedPetImage(petImageURL) {
-    // Assuming you have an <img> element with an id="petImage" to display the pet's image
+    
     const petImageElement = document.getElementById('petImage');
     if (petImageElement) {
         petImageElement.src = petImageURL;
