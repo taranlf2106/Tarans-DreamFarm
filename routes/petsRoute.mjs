@@ -5,9 +5,9 @@ import authMiddleware from '../modules/authMiddleware.mjs';
 
 const PET_API = express.Router();
 
-// Endpoint for registering a new pet
+
 PET_API.post('/registerPet', authMiddleware, async (req, res) => {
-    // Use the authenticated user's ID
+   
     const { petType, petName } = req.body;
     
     if (!petType || !petName) {
@@ -32,8 +32,8 @@ const petTypeToImageUrl = {
     dog: '/images/dog.png',
     squirrel: '/images/squirrel.png',
     deer: '/images/deer.png',
-    // Add more mappings as necessary
-    default: '/images/default.png', // Default image
+  
+    default: '/images/default.png', 
 };
 
 PET_API.get('/user-pets/', authMiddleware, async (req, res) => {
@@ -46,7 +46,7 @@ PET_API.get('/user-pets/', authMiddleware, async (req, res) => {
 
         if (pets.length > 0) {
             const petsWithImages = pets.map(pet => {
-                // Use static mapping to get image URL, fallback to default if not found
+               
                 const imageUrl = petTypeToImageUrl[pet.pet_type] || petTypeToImageUrl.default;
                 return { ...pet, imageUrl };
             });
@@ -67,14 +67,14 @@ PET_API.get('/user-pets/', authMiddleware, async (req, res) => {
     console.log(`Fetching pets for user ID: ${userId}`);
 
     try {
-        const authToken = req.headers.authorization; // Retrieve authorization token from request headers
-        const pets = await DBManager.getPetByUserId(userId, authToken); // Pass authorization token to the function
+        const authToken = req.headers.authorization; 
+        const pets = await DBManager.getPetByUserId(userId, authToken); 
 
         console.log(`Pets found for user ID ${userId}:`, pets);
 
         if (pets.length > 0) {
             const petsWithImages = pets.map(pet => {
-                // Use static mapping to get image URL, fallback to default if not found
+               
                 const imageUrl = petTypeToImageUrl[pet.pet_type] || petTypeToImageUrl.default;
                 return { ...pet, imageUrl };
             });

@@ -8,7 +8,7 @@ async function testDbConnection() {
     } catch (error) {
         console.error('Error testing the database connection:', error);
     } finally {
-        pool.end(); // Close the pool when done
+        pool.end();
     }
 }
 

@@ -553,13 +553,13 @@ async function displayUpdatedPetImage(petImageURL) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // When the My Info button is clicked, open the modal and populate it
+  
     document.getElementById("myInfoButton").addEventListener("click", () => {
         document.getElementById("myInfoModal").style.display = "block";
         populateUserInfo();
     });
 
-    // Close the My Info modal
+   
     document.querySelector('.closeMyInfo').addEventListener('click', () => {
         document.getElementById("myInfoModal").style.display = "none";
     });
@@ -568,13 +568,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const userId = localStorage.getItem('userId');
         const authToken = localStorage.getItem('authToken');
 
-        // Mapping from pet type to image URL
+        
         const petTypeToImageUrlMap = {
             cat: "media/Cat.png",
             dog: "media/Dog.png",
             squirrel: "media/Squirrel.png",
             deer: "media/Deer.png",
-            // Add more mappings as necessary
+            
         };
 
         if (!userId || !authToken) {
@@ -599,24 +599,24 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('userInfoEmail').textContent = `Email: ${data.user.email}`;
 
             const petImageContainer = document.getElementById('userPetImage');
-            petImageContainer.innerHTML = ''; // Clear previous content
+            petImageContainer.innerHTML = ''; 
             
             if (data.pets && data.pets.length > 0) {
-                const pet = data.pets[0]; // Display the first pet for simplicity
+                const pet = data.pets[0]; 
                 document.getElementById('userPetName').textContent = `Pet Name: ${pet.pet_name}`;
                 
-                // Only display the pet image to represent the pet type
+               
                 const imageUrl = petTypeToImageUrlMap[pet.pet_type];
                 if (imageUrl) {
                  const petImageElement = document.createElement('img');
                  petImageElement.src = imageUrl;
                  petImageElement.alt = `Image of ${pet.pet_type}`;
-                 petImageElement.classList.add("my-info-pet-image"); // Use the class for styling
+                 petImageElement.classList.add("my-info-pet-image"); 
                  petImageContainer.appendChild(petImageElement);
 }
             } else {
-                // Optionally, clear or hide the pet image container
-                petImageContainer.innerHTML = 'Pet info not available'; // Or set display to 'none'
+               
+                petImageContainer.innerHTML = 'Pet info not available'; 
             }
         } catch (error) {
             console.error('Error fetching user and pet info:', error);
@@ -635,14 +635,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Ensure the DOM content is loaded before accessing elements
+
 document.addEventListener("DOMContentLoaded", function () {
 
-// Add event listener for the edit user info button
+
 const editUserInfoButton = document.getElementById("editUserInfoButton");
 if (editUserInfoButton) {
     editUserInfoButton.addEventListener("click", () => {
-        // Open the edit modal
+      
         const editModal = document.getElementById("editModal");
         if (editModal) {
             editModal.style.display = "block";
@@ -650,15 +650,14 @@ if (editUserInfoButton) {
             console.error("Edit modal element not found.");
         }
 
-        // Assuming you're storing the current user's ID in localStorage when they log in
+       
         const userId = localStorage.getItem('userId');
         if (!userId) {
             console.error("No user ID found. Please log in.");
             return;
         }
 
-        // Populate the modal with existing user data if necessary
-        // This could involve fetching user data from the server or retrieving it from local storage
+      
     });
 } else {
     console.error("Edit user info button element not found.");
@@ -672,10 +671,10 @@ if (saveChangesButton) {
         const authToken = localStorage.getItem('authToken');
         const updatedUserName = document.getElementById("editUserName").value;
         const updatedEmail = document.getElementById("editUserEmail").value;
-        const updatedPassword = document.getElementById("editUserPassword").value; // Handle with care
+        const updatedPassword = document.getElementById("editUserPassword").value;
         const updatedPetName = document.getElementById("editPetName").value;
         const updatedPetType = document.getElementById("editPetType").value;
-        const petId = localStorage.getItem('petId'); // Ensure petId is stored when pet is registered/selected
+        const petId = localStorage.getItem('petId'); 
 
         try {
             await Promise.all([
@@ -692,7 +691,7 @@ if (saveChangesButton) {
             }
             
             // Update displayed user name
-            const userNameElement = document.getElementById("userName"); // Assuming an element with id "userName" for displaying user name
+            const userNameElement = document.getElementById("userName"); 
             if (userNameElement) {
                 userNameElement.textContent = updatedUserName;
             } else {
@@ -700,21 +699,21 @@ if (saveChangesButton) {
             }
             
             // Update displayed pet name and pet type
-            const petNameElement = document.getElementById("petName"); // Assuming an element with id "petName" for displaying pet name
+            const petNameElement = document.getElementById("petName"); 
             if (petNameElement) {
                 petNameElement.textContent = updatedPetName;
             } else {
                 console.error("Pet name element not found.");
             }
 
-            const petTypeElement = document.getElementById("petType"); // Assuming an element with id "petType" for displaying pet type
+            const petTypeElement = document.getElementById("petType"); 
             if (petTypeElement) {
                 petTypeElement.textContent = updatedPetType;
             } else {
                 console.error("Pet type element not found.");
             }
 
-            // Optionally, refresh user and pet information displayed on the page
+           
         } catch (error) {
             console.error("Error updating user or pet details:", error);
             alert("Failed to update user or pet details. Please try again.");
@@ -731,7 +730,7 @@ try {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${authToken}` // authToken should be the Base64 encoded string of username:password
+            'Authorization': `Basic ${authToken}` 
         },
         body: JSON.stringify({ name, email, password })
     });
@@ -739,7 +738,7 @@ try {
     return response.json();
 } catch (error) {
     console.error("Error updating user:", error);
-    throw error; // Rethrow to catch in calling function
+    throw error; 
 }
 }
 
@@ -764,12 +763,12 @@ async function updatePetDetails(petId, petName, petType, authToken) {
         return updatedPetDetails;
     } catch (error) {
         console.error("Error updating pet details:", error);
-        throw error; // Rethrow to handle in calling function
+        throw error; 
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Add event listener for the delete user button
+    
     const deleteUserButton = document.getElementById("deleteUserButton");
     if (deleteUserButton) {
         deleteUserButton.addEventListener("click", async () => {
@@ -784,7 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // Send a request to delete the user and associated pet(s)
+               
                 const response = await fetch(`http://localhost:8080/user/delete/${userId}`, {
             
                     method: 'DELETE',
@@ -797,15 +796,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(`Failed to delete user: ${response.statusText}`);
                 }
 
-                // Clear user-related data from localStorage
+               
                 localStorage.removeItem('userId');
                 localStorage.removeItem('authToken');
-                localStorage.removeItem('petId'); // Remove petId if necessary
+                localStorage.removeItem('petId'); 
 
-                // Optionally, update the UI to reflect the deletion
+                
                 alert("User and associated pet(s) deleted successfully!");
                 document.getElementById("myInfoModal").style.display = "none";
-                document.getElementById("petDisplayArea").innerHTML = ""; // Clear pet display area
+                document.getElementById("petDisplayArea").innerHTML = ""; 
             } catch (error) {
                 console.error("Error deleting user:", error);
                 alert("Failed to delete user and associated pet(s). Please try again.");
