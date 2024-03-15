@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Attempting to register user", { name, email, password });
 
     try {
-        const response = await fetch('http://localhost:8080/user/register', {
+        const response = await fetch('/user/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('userId', userData.id); // Adjust according to your backend response structure
 
         // After registration, perform login to get authToken
-        const loginResponse = await fetch('http://localhost:8080/user/login', {
+        const loginResponse = await fetch('/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/pets/registerPet', {
+        const response = await fetch('/pets/registerPet', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ if (loginButton) {
         const password = document.getElementById("loginPassword").value;
 
         try {
-            const response = await fetch('http://localhost:8080/user/login', {
+            const response = await fetch('/user/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -359,7 +359,7 @@ async function fetchProtectedUserInfo() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/user/protected-user-info', {
+        const response = await fetch('/user/protected-user-info', {
             headers: {
                 'Authorization': 'Bearer ' + authToken, // Include the token in the Authorization header
             },
@@ -403,7 +403,7 @@ async function fetchAndDisplayUserPets() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/pets/user-pets/', {
+        const response = await fetch('/pets/user-pets/', {
         method: 'GET',
         headers: {
             'Authorization': `Basic ${authToken}`,
@@ -522,7 +522,7 @@ async function updatePetDetailsAndFetchImage(petId, petName, petType, authToken)
         const updatedPetId = updateResponse.id; // Adjust according to your actual response structure
         
         // Fetch updated pet details, including the new pet type image
-        const petDetailsResponse = await fetch(`http://localhost:8080/pets/${updatedPetId}`, {
+        const petDetailsResponse = await fetch(`/pets/${updatedPetId}`, {
             method: 'GET',
             headers: { 'Authorization': `Basic ${authToken}` },
         });
@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/user/details/${userId}`, {
+            const response = await fetch(`/user/details/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Basic ${authToken}`,
@@ -726,7 +726,7 @@ if (saveChangesButton) {
 
 async function updateUserDetails(userId, name, email, password, authToken) {
 try {
-    const response = await fetch(`http://localhost:8080/user/update/${userId}`, {
+    const response = await fetch(`/user/update/${userId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -744,7 +744,7 @@ try {
 
 async function updatePetDetails(petId, petName, petType, authToken) {
     try {
-        const response = await fetch(`http://localhost:8080/pets/update/${petId}`, {
+        const response = await fetch(`/pets/update/${petId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                
-                const response = await fetch(`http://localhost:8080/user/delete/${userId}`, {
+                const response = await fetch(`/user/delete/${userId}`, {
             
                     method: 'DELETE',
                     headers: {
