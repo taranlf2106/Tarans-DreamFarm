@@ -636,3 +636,189 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+document.addEventListener("DOMContentLoaded", function () {
+
+
+const editUserInfoButton = document.getElementById("editUserInfoButton");
+if (editUserInfoButton) {
+    editUserInfoButton.addEventListener("click", () => {
+      
+        const editModal = document.getElementById("editModal");
+        if (editModal) {
+            editModal.style.display = "block";
+        } else {
+            console.error("Edit modal element not found.");
+        }
+
+       
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            console.error("No user ID found. Please log in.");
+            return;
+        }
+
+      
+    });
+} else {
+    console.error("Edit user info button element not found.");
+}
+
+// Add event listener for the save changes button
+const saveChangesButton = document.getElementById("saveChangesButton");
+if (saveChangesButton) {
+    saveChangesButton.addEventListener("click", async () => {
+        const userId = localStorage.getItem('userId');
+        const authToken = localStorage.getItem('authToken');
+        const updatedUserName = document.getElementById("editUserName").value;
+        const updatedEmail = document.getElementById("editUserEmail").value;
+        const updatedPassword = document.getElementById("editUserPassword").value;
+        const updatedPetName = document.getElementById("editPetName").value;
+        const updatedPetType = document.getElementById("editPetType").value;
+        const petId = localStorage.getItem('petId'); 
+
+        try {
+            await Promise.all([
+                updateUserDetails(userId, updatedUserName, updatedEmail, updatedPassword, authToken),
+                updatePetDetails(petId, updatedPetName, updatedPetType, authToken)
+            ]);
+
+            alert("User and pet details updated successfully!");
+            const editModal = document.getElementById("editModal");
+            if (editModal) {
+                editModal.style.display = "none";
+            } else {
+                console.error("Edit modal element not found.");
+            }
+            
+            // Update displayed user name
+            const userNameElement = document.getElementById("userName"); 
+            if (userNameElement) {
+                userNameElement.textContent = updatedUserName;
+            } else {
+                console.error("User name element not found.");
+            }
+            
+            // Update displayed pet name and pet type
+            const petNameElement = document.getElementById("petName"); 
+            if (petNameElement) {
+                petNameElement.textContent = updatedPetName;
+            } else {
+                console.error("Pet name element not found.");
+            }
+
+            const petTypeElement = document.getElementById("petType"); 
+            if (petTypeElement) {
+                petTypeElement.textContent = updatedPetType;
+            } else {
+                console.error("Pet type element not found.");
+            }
+
+           
+        } catch (error) {
+            console.error("Error updating user or pet details:", error);
+            alert("Failed to update user or pet details. Please try again.");
+        }
+    });
+} else {
+    console.error("Save changes button element not found.");
+}
+});
+
+async function updateUserDetails(userId, name, email, password, authToken) {
+try {
+    const response = await fetch(`/user/update/${userId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${authToken}` 
+        },
+        body: JSON.stringify({ name, email, password })
+    });
+    if (!response.ok) throw new Error('Failed to update user details');
+    return response.json();
+} catch (error) {
+    console.error("Error updating user:", error);
+    throw error; 
+}
+}
+
+async function updatePetDetails(petId, petName, petType, authToken) {
+    try {
+        const response = await fetch(`/pets/update/${petId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${authToken}`
+            },
+            body: JSON.stringify({ petName, petType })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update pet details: ${response.statusText}`);
+        }
+
+        const updatedPetDetails = await response.json();
+        console.log("Pet details updated successfully", updatedPetDetails);
+
+        return updatedPetDetails;
+    } catch (error) {
+        console.error("Error updating pet details:", error);
+        throw error; 
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    const deleteUserButton = document.getElementById("deleteUserButton");
+    if (deleteUserButton) {
+        deleteUserButton.addEventListener("click", async () => {
+            const userId = localStorage.getItem('userId');
+            const authToken = localStorage.getItem('authToken');
+
+            console.log("User ID:", userId);
+
+            if (!userId || !authToken) {
+                console.error("User ID or Auth Token not found");
+                return;
+            }
+
+            try {
+               
+                const response = await fetch(`/user/delete/${userId}`, {
+            
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Basic ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete user: ${response.statusText}`);
+                }
+
+               
+                localStorage.removeItem('userId');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('petId'); 
+
+                
+                alert("User and associated pet(s) deleted successfully!");
+                document.getElementById("myInfoModal").style.display = "none";
+                document.getElementById("petDisplayArea").innerHTML = ""; 
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert("Failed to delete user and associated pet(s). Please try again.");
+            }
+        });
+    } else {
+        console.error("Delete user button element not found.");
+    }
+});
+
+
+
+
+
+</script>
+     </body>
+         </html>
